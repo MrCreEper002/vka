@@ -7,7 +7,7 @@ from typing import Tuple, Dict, Any
 import click
 
 
-class VkErr(Exception):
+class VkApiError(Exception):
     """
     Исключение, вызывается если VK API вернул ошибку в ответе
     """

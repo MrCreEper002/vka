@@ -10,6 +10,7 @@ from attrdict import AttrDict
 from typing import Optional, Union, Dict
 from aiohttp import ClientSession
 from loguru import logger
+from .exception import VkApiError
 
 
 def random_() -> random:
@@ -20,19 +21,19 @@ def peer_id():
     return 2_000_000_000
 
 
-class VkApiError(Exception):
-    def __init__(self, resp: AttrDict):
-        self._resp = AttrDict(resp)
-        self.error_code = self._resp.error_code
-        self.error_msg = self._resp.error_msg
-        self._msg = f'[{self.error_code}] {self.error_msg}'
-        logger.error(self._msg)
-
-    def __str__(self):
-        return self._msg
-
-    def __call__(self, *args, **kwargs):
-        return self._msg
+# class VkApiError(Exception):
+#     def __init__(self, resp: AttrDict):
+#         self._resp = AttrDict(resp)
+#         self.error_code = self._resp.error_code
+#         self.error_msg = self._resp.error_msg
+#         self._msg = f'[{self.error_code}] {self.error_msg}'
+#         logger.error(self._msg)
+#
+#     def __str__(self):
+#         return self._msg
+#
+#     def __call__(self, *args, **kwargs):
+#         return self._msg
 
 
 class API:
