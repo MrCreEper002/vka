@@ -5,7 +5,7 @@ test
 # Env
 venv
 
-.DS_Store
+/.DS_Store
 
 .idea
 vka/__pycache__/
