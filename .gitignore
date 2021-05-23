@@ -4,3 +4,22 @@ test
 
 # Env
 venv
+
+.DS_Store
+.gitignore
+.idea/.gitignore
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+.idea/vk-a.iml
+vka/__pycache__/api.cpython-38.pyc
+vka/__pycache__/bot.cpython-38.pyc
+vka/__pycache__/command.cpython-38.pyc
+vka/__pycache__/exception.cpython-38.pyc
+vka/__pycache__/longpoll.cpython-38.pyc
+vka/__pycache__/storage_box.cpython-38.pyc
+vka/__pycache__/validator.cpython-38.pyc
+vka/api.py
+vka/base/__pycache__/message.cpython-38.pyc
+vka/base/__pycache__/wrapper.cpython-38.pyc
