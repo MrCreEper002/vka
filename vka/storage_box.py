@@ -10,7 +10,7 @@ class StorageBox:
     addition: AttrDict = dataclasses.field(default_factory=AttrDict)
 
     def __repr__(self):
-        return f'<Commands={len(self.commands)}>'
+        return f'StorageBox({self.commands} {self.addition})'
 
 
 class Attr(dict):

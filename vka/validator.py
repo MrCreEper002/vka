@@ -1,7 +1,9 @@
+import asyncio
 import json
 
 from loguru import logger
 
+# from vka.bot import Bot
 from vka.api import random_
 from vka.base.message import Message
 from typing import Optional, List, Union, Dict
@@ -10,21 +12,36 @@ from vka.api import API
 
 class Validator:
 
-    def __init__(self, event, api: API):
+    def __init__(
+            self,
+            event,
+            api: API,
+            receive=None,
+            type_message: str = ''
+    ):
         self._event = event
         self._api = api
+        self._receive = receive
+        self._type_message = type_message
 
-    @property
-    def msg(self) -> Message:
-        return self._event.message
+    async def receive_new_message(self):
+        while True:
+            try:
+                event = await self._receive()
+                if event.updates:
+                    type_message = event.updates[0].type
+                    obj = event.updates[0].object
+                    yield Validator(
+                        obj,
+                        self.api,
+                        type_message=type_message
+                    )
 
-    @property
-    def api(self) -> API:
-        return self._api
-
-    @property
-    def event(self):
-        return self._event
+            except asyncio.TimeoutError:
+                continue
+            except Exception as error:
+                logger.exception(error)
+                break
 
     async def answer(
             self,
@@ -87,6 +104,22 @@ class Validator:
                 "peer_id": self.msg.peer_id,
             })
         return await self._messages_send(locals(), params)
+
+    @property
+    def msg(self) -> Message:
+        return self._event.message
+
+    @property
+    def api(self) -> API:
+        return self._api
+
+    @property
+    def event(self):
+        return self._event
+
+    @property
+    def type_message(self):
+        return self._type_message
 
     async def _messages_send(self, locals_: locals, params: Dict):
 

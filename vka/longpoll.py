@@ -1,20 +1,20 @@
-import asyncio
 from attrdict import AttrDict
-
-from vka.base.message import Message
 from vka.storage_box import storage_box
-from .api import API
+from .api import API, version_api
 from aiohttp import ClientSession
 from loguru import logger
 
 
 class LongPoll:
-    def __init__(self, token: str, wait: int = 25):
+    """
+    главный класс отвечающий за лонгпул
+    """
+    def __init__(self, token: str, wait: int = 25, lang: int = 0, version: str = version_api()):
         self._commands = []
         self._session = ClientSession()
         self._token = token
         self._wait = wait
-        self.api = API(self._token)
+        self.api = API(self._token, lang=lang, version=version)
         self.group_id = 0
         self._storage_box = storage_box
 
