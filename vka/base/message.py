@@ -1,11 +1,12 @@
 import datetime
 import json
 from typing import Optional, List
-
 from attrdict import AttrDict
-
-from vka.api import peer_id
 from vka.base.wrapper import Wrapper
+
+
+def peer_id():
+    return 2_000_000_000
 
 
 class Message(Wrapper):

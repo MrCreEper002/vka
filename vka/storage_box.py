@@ -1,6 +1,4 @@
 import dataclasses
-from typing import List
-
 from attrdict import AttrDict
 
 
@@ -8,15 +6,10 @@ from attrdict import AttrDict
 class StorageBox:
     commands: AttrDict = dataclasses.field(default_factory=list)
     addition: AttrDict = dataclasses.field(default_factory=AttrDict)
+    callback_action: AttrDict = dataclasses.field(default_factory=list)
 
     def __repr__(self):
         return f'StorageBox({self.commands} {self.addition})'
-
-
-class Attr(dict):
-    def __init__(self, *args, **kwargs):
-        super(Attr, self).__init__(*args, **kwargs)
-        self.__dict__ = self
 
 
 storage_box = StorageBox()
