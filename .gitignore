@@ -6,7 +6,8 @@ test
 venv
 
 .DS_Store
-
+AddBot
 .idea
 vka/__pycache__/
 vka/base/__pycache__/
+vka/base/buiders/__pycache__

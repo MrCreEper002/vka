@@ -15,13 +15,13 @@ class Validator:
 
     def __init__(
             self,
-            bot,
-            event,
+            bot, event,
             api: API,
             receive=None,
             type_message: str = '',
             debug: bool = False,
             setup=None,
+
     ):
         self._bot = bot
         self._event = event
@@ -30,6 +30,7 @@ class Validator:
         self._type_message = type_message
         self._debug = debug
         self._setup = setup
+        self.cmd: str = ''
 
     async def receive_new_message(
             self,
@@ -51,11 +52,11 @@ class Validator:
             try:
                 event = await self._receive()
                 if event.updates and self._debug:
-
+                    logger.debug(event)
+                if event.updates:
                     obj = event.updates[0].object
                     type_message = event.updates[0].type
-                    if type_message == 'message_new':
-                        logger.debug(event)
+                    if type_message in ['message_new', 'message_event']:
                         if not any_user:
                             try:
                                 from_id = obj.message.from_id
@@ -63,15 +64,15 @@ class Validator:
                                 from_id = obj.user_id
                             if self.msg.from_id == from_id:
                                 yield Validator(
-                                    self._bot,
-                                    obj,
-                                    self.api,
+                                    bot=self._bot, event=obj,
+                                    api=self.api, receive=self._receive,
+                                    debug=self._debug, setup=self.setup
                                 )
                         else:
                             yield Validator(
-                                self._bot,
-                                obj,
-                                self.api,
+                                bot=self._bot, event=obj,
+                                api=self.api, receive=self._receive,
+                                debug=self._debug, setup=self.setup
                             )
 
             except asyncio.TimeoutError:
