@@ -182,14 +182,18 @@ class Bot(LongPoll, Commands):
                     obj = event.updates[0].object
                     if type_message == 'message_new':
                         if obj.message.get('payload'):
-                            asyncio.create_task(self._shipment_data_message_event(obj))
+                            asyncio.create_task(
+                                self._shipment_data_message_event(obj)
+                            )
                             continue
                         asyncio.create_task(
                             self._shipment_data_new_message(obj)
                         )
                         continue
                     if type_message == 'message_event':
-                        asyncio.create_task(self._shipment_data_message_event(obj))
+                        asyncio.create_task(
+                            self._shipment_data_message_event(obj)
+                        )
                         continue
 
             except asyncio.TimeoutError:
@@ -202,7 +206,13 @@ class Bot(LongPoll, Commands):
         Обрабатывает нового сообощения
         """
         return await self._check_message(
-            Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state),
+            Validator(
+                self, obj,
+                self.api,
+                self._check,
+                debug=self._debug,
+                setup=self._state
+            ),
             storage_box,
             # debug
         )
@@ -218,37 +228,25 @@ class Bot(LongPoll, Commands):
             command = obj.payload.command
         except:
             command = eval(obj.message.payload)['command']
-        logger.info(storage_box.callback_action)
 
         saved_command = storage_box.callback_action.get(command)
 
         if saved_command:
             if saved_command.get('click'):
-                parameters = inspect.signature(saved_command['func_obj']).parameters
-                if len(parameters) == 0:
-                    return await saved_command['func_obj']()
-                return await saved_command['func_obj'](
-                    Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state)
+                return await self.inspect_signature_return(
+                    saved_command['func_obj'], obj
                 )
             if saved_command['callback']:
-                parameters = inspect.signature(saved_command['func_obj']).parameters
-                if len(parameters) == 0:
-                    return await saved_command['func_obj']()
-                return await saved_command['func_obj'](
-                    Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state)
+                return await self.inspect_signature_return(
+                    saved_command['func_obj'], obj
                 )
             if saved_command['show_snackbar']:
                 event_data['type'] = 'show_snackbar'
-                parameters = inspect.signature(saved_command['func_obj']).parameters
-                if len(parameters) == 0:
-                    event_data['text'] = await saved_command['func_obj']()
-                else:
-                    event_data['text'] = await saved_command['func_obj'](
-                        Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state)
-                    )
+                event_data = await self.inspect_signature_executions(
+                    saved_command['func_obj'], obj, event_data
+                )
         if event_data == {}:
             return
-        logger.success(1)
         return await self.api.method(
             'messages.sendMessageEventAnswer',
             {
@@ -258,3 +256,37 @@ class Bot(LongPoll, Commands):
                 "event_data": json.dumps(event_data)
             }
         )
+
+    async def inspect_signature_return(self, func, obj):
+        parameters = inspect.signature(
+            func
+        ).parameters
+        if len(parameters) == 0:
+            return await func()
+        return await func(
+            Validator(
+                self, obj, self.api,
+                self._check,
+                debug=self._debug,
+                setup=self._state
+            )
+        )
+
+    async def inspect_signature_executions(
+            self, func, obj, event_data
+    ):
+        parameters = inspect.signature(
+            func
+        ).parameters
+        if len(parameters) == 0:
+            event_data['text'] = await func()
+        else:
+            event_data['text'] = await func(
+                Validator(
+                    self, obj, self.api,
+                    self._check,
+                    debug=self._debug,
+                    setup=self._state
+                )
+            )
+        return event_data
