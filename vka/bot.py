@@ -6,7 +6,7 @@ from vka.base.longpoll import LongPoll
 from vka.storage_box import storage_box
 from vka.validator import Validator
 import inspect
-from typing import Iterable, List
+from typing import Iterable, List, Any
 
 
 class Commands:
@@ -29,17 +29,11 @@ class Commands:
 
         def decorator(func):
             def wrapper():
-                storage_box.callback_action.append(
-                    AttrDict(
-                        {
-                            'func_obj': func,
-                            'callback': callback,
-                            'show_snackbar': show_snackbar,
-                            # 'open_link': open_link,
-                            # 'open_app': open_app
-                        }
-                    )
-                )
+                storage_box.callback_action[func.__name__] = {
+                    'func_obj': func,
+                    'callback': callback,
+                    'show_snackbar': show_snackbar
+                }
                 return func
 
             return wrapper()
@@ -53,14 +47,10 @@ class Commands:
         """
 
         def wrapper():
-            storage_box.callback_action.append(
-                AttrDict(
-                    {
-                        'func_obj': func,
-                        'click': True
-                    }
-                )
-            )
+            storage_box.callback_action[func.__name__] = {
+                'func_obj': func,
+                'click': True
+            }
             return func
 
         return wrapper()
@@ -70,7 +60,7 @@ class Commands:
             func_name: object,
             ctx: [Validator, AttrDict],
             any_user: List,
-    ):
+    ) -> bool:
         """
         Проверяем нажали ли на кнопку, если да то возвращает True иначе False
         :param any_user:
@@ -84,7 +74,8 @@ class Commands:
         """
         if ctx.msg.get('payload'):
             command = eval(str(ctx.msg.payload))
-            if any_user[0] is True and (len(any_user) == 1 or any_user[1] is Ellipsis):
+            if any_user[0] is True and \
+                    (len(any_user) == 1 or any_user[1] is Ellipsis):
                 if func_name.__name__ == command['command']:
                     return True
             elif any_user[0] is False and type(any_user[1]) is list:
@@ -92,7 +83,8 @@ class Commands:
                     from_id = ctx.msg.from_id
                 except:
                     from_id = ctx.msg.user_id
-                if func_name.__name__ == command['command'] and from_id in any_user[1]:
+                if func_name.__name__ == command['command'] \
+                        and from_id in any_user[1]:
                     return True
         return False
 
@@ -101,6 +93,7 @@ class Commands:
             names: Iterable[str] = (),
             prefixes: Iterable[str] = (),
             any_text: bool = False,
+            lvl: Any = None,
     ):
         def wrapper(func):
             storage_box.commands.append(
@@ -109,7 +102,8 @@ class Commands:
                         'func_obj': func,
                         'any_text': any_text,
                         'names': names,
-                        'prefixes': prefixes
+                        'prefixes': prefixes,
+                        'lvl': lvl
                     }
                 )
             )
@@ -121,23 +115,37 @@ class Commands:
             self,
             ctx: Validator,
             storage: storage_box
-    ):
+    ) -> None:
         for command in storage.commands:
             if command['any_text']:
-                # await self.init_func(command['func_obj'])
                 asyncio.create_task(command['func_obj'](ctx))
                 continue
-            if command['names'] == ctx.msg.text:
-                # await self.init_func(command['func_obj'])
-                asyncio.create_task(command['func_obj'](ctx))
+            cmd = ctx.msg.text[0:len(command['names']):]
+            if cmd == command['names']:
+                ctx.cmd = cmd
+                await self._init_func(
+                    func=command['func_obj'],
+                    ctx=ctx,
+                    argument=ctx.msg.text.replace(cmd, '').strip()
+                )
+                continue
 
-    async def _init_func(self, func):
-        for name, argument in inspect.signature(func).parameters.items():
-            if argument.annotation is Validator:
-                print(argument, 1)
-            else:
-                print(argument, 2)
-            # logger.info(f"{name} {argument.annotation} {argument.annotation is Validator}")
+    @staticmethod
+    async def _init_func(
+            func,
+            ctx: Validator,
+            argument: str
+    ) -> asyncio.create_task:
+        argument = argument if argument != '' else None
+        parameters = inspect.signature(func).parameters
+        if len(parameters) == 0 and argument is None:
+            return asyncio.create_task(func())
+        elif len(parameters) == 1 and argument is None:
+            return asyncio.create_task(func(ctx))
+        elif len(parameters) == 2:
+            return asyncio.create_task(func(ctx, argument))
+        else:
+            return
 
 
 class Bot(LongPoll, Commands):
@@ -156,7 +164,8 @@ class Bot(LongPoll, Commands):
         """
         Производит запуск бота
         """
-        asyncio.create_task(setup(self))
+        if setup is not None:
+            asyncio.create_task(setup(self))
         self.group_id = (
             await self.api.method('groups.getById', {})
         ).response[0].id
@@ -209,34 +218,34 @@ class Bot(LongPoll, Commands):
             command = obj.payload.command
         except:
             command = eval(obj.message.payload)['command']
+        logger.info(storage_box.callback_action)
 
-        for i in range(len(storage_box.callback_action)):
-            if storage_box.callback_action[i].func_obj.__name__ == command:
-                if storage_box.callback_action[i].get('click'):
-                    parameters = inspect.signature(storage_box.callback_action[i].func_obj).parameters
-                    if len(parameters) == 0:
-                        return await storage_box.callback_action[i].func_obj()
-                    return await storage_box.callback_action[i].func_obj(
-                        Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state)
-                    )
-                if storage_box.callback_action[i].callback:
-                    parameters = inspect.signature(storage_box.callback_action[i].func_obj).parameters
-                    if len(parameters) == 0:
-                        return await storage_box.callback_action[i].func_obj()
-                    return await storage_box.callback_action[i].func_obj(
-                        Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state)
-                    )
-                if storage_box.callback_action[i].show_snackbar:
-                    event_data['type'] = 'show_snackbar'
-                    parameters = inspect.signature(storage_box.callback_action[i].func_obj).parameters
-                    if len(parameters) == 0:
-                        event_data['text'] = await storage_box.callback_action[i].func_obj()
-                        break
-                    event_data['text'] = await storage_box.callback_action[i].func_obj(
-                        Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state)
-                    )
-                    break
+        saved_command = storage_box.callback_action.get(command)
 
+        if saved_command:
+            if saved_command.get('click'):
+                parameters = inspect.signature(saved_command['func_obj']).parameters
+                if len(parameters) == 0:
+                    return await saved_command['func_obj']()
+                return await saved_command['func_obj'](
+                    Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state)
+                )
+            if saved_command['callback']:
+                parameters = inspect.signature(saved_command['func_obj']).parameters
+                if len(parameters) == 0:
+                    return await saved_command['func_obj']()
+                return await saved_command['func_obj'](
+                    Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state)
+                )
+            if saved_command['show_snackbar']:
+                event_data['type'] = 'show_snackbar'
+                parameters = inspect.signature(saved_command['func_obj']).parameters
+                if len(parameters) == 0:
+                    event_data['text'] = await saved_command['func_obj']()
+                else:
+                    event_data['text'] = await saved_command['func_obj'](
+                        Validator(self, obj, self.api, self._check, debug=self._debug, setup=self._state)
+                    )
         if event_data == {}:
             return
         logger.success(1)

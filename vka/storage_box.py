@@ -6,7 +6,7 @@ from attrdict import AttrDict
 class StorageBox:
     commands: AttrDict = dataclasses.field(default_factory=list)
     addition: AttrDict = dataclasses.field(default_factory=AttrDict)
-    callback_action: AttrDict = dataclasses.field(default_factory=list)
+    callback_action: AttrDict = dataclasses.field(default_factory=dict)
 
     def __repr__(self):
         return f'StorageBox({self.commands} {self.addition})'
