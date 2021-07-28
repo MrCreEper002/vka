@@ -17,11 +17,14 @@ class Message(Wrapper):
 
     @property
     def peer_id(self) -> int:
-        return self.fields.message.peer_id
+        try:
+            return self.fields.message.peer_id
+        except:
+            return self.fields.peer_id
 
     @property
     def chat_id(self) -> int:
-        chat_id = self.message.peer_id - peer_id()
+        chat_id = self.peer_id - peer_id()
         if chat_id < 0:
             raise ValueError(
                 "Can't get `chat_id` if message wasn't sent in a chat"
@@ -39,7 +42,10 @@ class Message(Wrapper):
 
     @property
     def from_id(self) -> int:
-        return self.fields.message.from_id
+        try:
+            return self.fields.message.from_id
+        except:
+            return self.fields.user_id
 
     @property
     def text(self) -> str:
@@ -77,9 +83,12 @@ class Message(Wrapper):
 
     @property
     def payload(self) -> Optional[AttrDict]:
-        if "payload" in self.fields:
-            return AttrDict(json.loads(self.fields.message.payload))
-        return None
+        try:
+            if "payload" in self.fields:
+                return AttrDict(json.loads(self.fields.message.payload))
+            return None
+        except:
+            return AttrDict(json.loads(self.fields.payload))
 
     @property
     def reply_message(self):
@@ -91,5 +100,6 @@ class Message(Wrapper):
     def action(self) -> Optional[AttrDict]:
         return self.fields.message.action if "action" in self.fields else None
 
-
-
+    @property
+    def event_id(self):
+        return self.fields.event_id if self.fields.get('event_id') else None

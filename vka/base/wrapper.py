@@ -1,5 +1,6 @@
 from attrdict import AttrDict
 from vka.storage_box import storage_box
+from loguru import logger
 
 
 class Wrapper:
@@ -12,7 +13,3 @@ class Wrapper:
     @property
     def fields(self):
         return self._fields
-
-    @property
-    def storage_box(self):
-        return storage_box

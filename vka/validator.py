@@ -3,12 +3,11 @@ import json
 
 from loguru import logger
 from attrdict import AttrDict
-# from vka.bot import Bot
-# from vka import Keyboard
 from vka.base.user import User
 from vka.base.message import Message
 from typing import Optional, List, Union, Dict, AsyncIterable
 from vka.api import API, random_
+from vka.storage_box import storage_box
 
 
 class Validator:
@@ -162,6 +161,36 @@ class Validator:
         params = {"peer_id": self.msg.peer_id}
         return await self._messages_edit(locals(), params)
 
+    async def transmit(
+            self,
+            message: str,
+            **kwargs,
+    ):
+        if self.storage_box.messages_ids.get(self.msg.peer_id):
+            return await self.edit(
+                message,
+                self.storage_box.messages_ids[self.msg.peer_id]['id'],
+                **kwargs
+            )
+        else:
+            try:
+                getConversationsById = (
+                    await self.api.messages.getConversationsById(
+                        peer_ids=self.msg.peer_id
+                    )
+                ).response['items'][0]['last_conversation_message_id']
+                message_id = getConversationsById
+
+                if self.storage_box.messages_ids.get(self.msg.peer_id):
+                    del self.storage_box.messages_ids[self.msg.peer_id]
+                self.storage_box.messages_ids[self.msg.peer_id] = {
+                    'id': message_id
+                }
+                return await self.edit(message, message_id, **kwargs)
+            except:
+                ...
+        return await self.answer(message, **kwargs)
+
     async def fetch_sender(self, fields=None, name_case=None) -> User:
         """
         Обертка чтобы чтобы получить информацию об отправившем сообщениии
@@ -186,10 +215,8 @@ class Validator:
 
     @property
     def msg(self) -> Message:
-        try:
-            return self._event.message
-        except:
-            return self._event
+        return Message(self._event)
+
 
     @property
     def api(self) -> API:
@@ -207,7 +234,7 @@ class Validator:
     def setup(self):
         return self._setup
 
-    async def _messages_send(self, locals_: locals, params: Dict):
+    async def _messages_send(self, locals_: locals, params: Dict) -> int:
 
         for name, value in locals_.items():
             if name == "kwargs":
@@ -218,7 +245,12 @@ class Validator:
         del params["params"]
         params['random_id'] = random_()
         messages_id = await self.api.method("messages.send", params)
-        return messages_id
+        if self.storage_box.messages_ids.get(self.msg.peer_id):
+            del self.storage_box.messages_ids[self.msg.peer_id]
+        self.storage_box.messages_ids[self.msg.peer_id] = {
+            'id': messages_id.response
+        }
+        return messages_id.response
 
     async def _messages_edit(self, locals_: locals, params: Dict):
 
@@ -229,5 +261,10 @@ class Validator:
                 params.update({name: value})
 
         del params["params"]
+
         messages_id = await self.api.method("messages.edit", params)
         return messages_id
+
+    @property
+    def storage_box(self):
+        return storage_box

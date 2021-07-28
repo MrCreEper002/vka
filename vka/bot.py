@@ -156,8 +156,8 @@ class Bot(LongPoll, Commands):
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self._async_run(setup))
             loop.close()
-        except KeyboardInterrupt:
-            pass
+        except (KeyboardInterrupt, SystemExit):
+            return
         logger.warning('Остановка бота')
 
     async def _async_run(self, setup):
@@ -220,31 +220,49 @@ class Bot(LongPoll, Commands):
     async def _shipment_data_message_event(self, obj):
         """
         Обрабатывает нажатие на кнопку
-        то есть если пользователь нажмет на кнопку то в функции может чтото выполнится
+        то есть если пользователь нажмет на кнопку то в функции
+        может чтото выполнится
         эта функция не отвечает за показ выполнилось функция или нет
         """
         event_data = {}
         try:
             command = obj.payload.command
+            argument = obj.payload.args
         except:
+            argument = AttrDict(eval(obj.message.payload))
             command = eval(obj.message.payload)['command']
 
         saved_command = storage_box.callback_action.get(command)
-
+        ctx = Validator(
+            self, obj, self.api, self._check,
+            debug=self._debug,
+            setup=self._state
+        )
         if saved_command:
             if saved_command.get('click'):
-                return await self.inspect_signature_return(
-                    saved_command['func_obj'], obj
-                )
+                return await self._init_func(saved_command['func_obj'], ctx, argument)
+                # return await self.inspect_signature_return(
+                #     saved_command['func_obj'], obj
+                # )
             if saved_command['callback']:
-                return await self.inspect_signature_return(
-                    saved_command['func_obj'], obj
-                )
+                return await self._init_func(saved_command['func_obj'], ctx, argument)
+                # return await self.inspect_signature_return(
+                #     saved_command['func_obj'], obj
+                # )
             if saved_command['show_snackbar']:
                 event_data['type'] = 'show_snackbar'
                 event_data = await self.inspect_signature_executions(
                     saved_command['func_obj'], obj, event_data
                 )
+        else:
+            for func in storage_box.commands:
+                if func.func_obj.__name__ == command:
+                    ctx.cmd = func.names
+                    return await self._init_func(func.func_obj, ctx, argument)
+                    # return await self.inspect_signature_return(
+                    #     func.func_obj, obj
+                    # )
+
         if event_data == {}:
             return
         return await self.api.method(
