@@ -75,4 +75,4 @@ async def hello_world(ctx: Validator):
 bot.run()
 ```
 
-####Если нужно изменить сообщение, то можно использовать метод `transmit` из класса `Validator` (объединены методы `answer` и `edit`).
+Если нужно изменить сообщение, то можно использовать метод `transmit` из класса `Validator` (объединены методы `answer` и `edit`).
