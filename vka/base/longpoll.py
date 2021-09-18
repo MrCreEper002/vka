@@ -18,6 +18,7 @@ class LongPoll:
         self.group_id = 0
         self._storage_box = storage_box
         self._state = {}
+        self._debug = False
 
     def _get(self):
         logger.info(self._state)

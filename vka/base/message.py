@@ -45,7 +45,10 @@ class Message(Wrapper):
         try:
             return self.fields.message.from_id
         except:
-            return self.fields.user_id
+            try:
+                return self.fields.user_id
+            except:
+                return self.fields.from_id
 
     @property
     def text(self) -> str:
@@ -88,7 +91,7 @@ class Message(Wrapper):
                 return AttrDict(json.loads(self.fields.message.payload))
             return None
         except:
-            return AttrDict(json.loads(self.fields.payload))
+            return self.fields.payload
 
     @property
     def reply_message(self):
@@ -103,3 +106,6 @@ class Message(Wrapper):
     @property
     def event_id(self):
         return self.fields.event_id if self.fields.get('event_id') else None
+
+    def __repr__(self):
+        return f"{self.fields}"

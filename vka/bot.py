@@ -7,6 +7,7 @@ from vka.storage_box import storage_box
 from vka.validator import Validator
 import inspect
 from typing import Iterable, List, Any
+from datetime import datetime
 
 
 class Commands:
@@ -72,7 +73,7 @@ class Commands:
         :param func_name: объект функции
         :param ctx: передавать Validator
         """
-        if ctx.msg.get('payload'):
+        if ctx.msg.payload is not None:
             command = eval(str(ctx.msg.payload))
             if any_user[0] is True and \
                     (len(any_user) == 1 or any_user[1] is Ellipsis):
@@ -94,6 +95,7 @@ class Commands:
             prefixes: Iterable[str] = (),
             any_text: bool = False,
             lvl: Any = None,
+            show_snackbar: str = None
     ):
         def wrapper(func):
             storage_box.commands.append(
@@ -103,7 +105,8 @@ class Commands:
                         'any_text': any_text,
                         'names': names,
                         'prefixes': prefixes,
-                        'lvl': lvl
+                        'lvl': lvl,
+                        'show_snackbar': show_snackbar,
                     }
                 )
             )
@@ -120,13 +123,39 @@ class Commands:
             if command['any_text']:
                 asyncio.create_task(command['func_obj'](ctx))
                 continue
-            cmd = ctx.msg.text[0:len(command['names']):]
-            if cmd == command['names']:
-                ctx.cmd = cmd
+            # TODO Сделать чтобы по `prefixes` тоже работало
+            # if command["prefixes"] is list:
+            #     prefixes = ''.join([i for i in command['prefixes'] if ctx.msg.text.startswith(i)])
+            if type(command['names']) is list:
+                cmd = ''.join(
+                    [
+                        i
+                        for i in command['names']
+                        if i in ctx.msg.text.lower().split(
+                                ' '
+                            )[0:len(i.split(' '))]
+                    ]
+                )
+                if cmd in command['names']:
+                    ctx.cmd = cmd
+                    await self._init_func(
+                        func=command['func_obj'],
+                        ctx=ctx,
+                        argument=ctx.msg.text.replace(cmd, '').strip()
+                    )
+                continue
+            else:
+                cmd = ctx.msg.text.lower().split(
+                    ' '
+                )[0:len(command['names'].split(' '))]
+            if command['names'] in cmd:
+                ctx.cmd = command['names']
                 await self._init_func(
                     func=command['func_obj'],
                     ctx=ctx,
-                    argument=ctx.msg.text.replace(cmd, '').strip()
+                    argument=ctx.msg.text.lower().replace(
+                        command['names'], ''
+                    ).strip()
                 )
                 continue
 
@@ -137,6 +166,7 @@ class Commands:
             argument: str
     ) -> asyncio.create_task:
         argument = argument if argument != '' else None
+        argument = argument if argument != () else None
         parameters = inspect.signature(func).parameters
         if len(parameters) == 0 and argument is None:
             return asyncio.create_task(func())
@@ -203,13 +233,13 @@ class Bot(LongPoll, Commands):
 
     async def _shipment_data_new_message(self, obj):
         """
-        Обрабатывает нового сообощения
+        Обрабатывает нового сообщения
         """
         return await self._check_message(
             Validator(
-                self, obj,
-                self.api,
-                self._check,
+                bot=self, event=obj,
+                api=self.api, group_id=self.group_id,
+                receive=self._check,
                 debug=self._debug,
                 setup=self._state
             ),
@@ -221,47 +251,63 @@ class Bot(LongPoll, Commands):
         """
         Обрабатывает нажатие на кнопку
         то есть если пользователь нажмет на кнопку то в функции
-        может чтото выполнится
+        может что-то выполнится
         эта функция не отвечает за показ выполнилось функция или нет
         """
         event_data = {}
         try:
             command = obj.payload.command
             argument = obj.payload.args
-        except:
-            argument = AttrDict(eval(obj.message.payload))
-            command = eval(obj.message.payload)['command']
+        except (KeyError, AttributeError):
+            try:
+                argument = AttrDict(eval(obj.message.payload))
+                command = eval(obj.message.payload)['command']
+            except (KeyError, AttributeError):
+                return
 
         saved_command = storage_box.callback_action.get(command)
         ctx = Validator(
-            self, obj, self.api, self._check,
-            debug=self._debug,
-            setup=self._state
-        )
+                bot=self, event=obj,
+                api=self.api, group_id=self.group_id,
+                receive=self._check,
+                debug=self._debug,
+                setup=self._state
+            )
         if saved_command:
             if saved_command.get('click'):
                 return await self._init_func(saved_command['func_obj'], ctx, argument)
-                # return await self.inspect_signature_return(
-                #     saved_command['func_obj'], obj
-                # )
             if saved_command['callback']:
-                return await self._init_func(saved_command['func_obj'], ctx, argument)
-                # return await self.inspect_signature_return(
-                #     saved_command['func_obj'], obj
-                # )
+                await self._init_func(saved_command['func_obj'], ctx, argument)
             if saved_command['show_snackbar']:
                 event_data['type'] = 'show_snackbar'
                 event_data = await self.inspect_signature_executions(
-                    saved_command['func_obj'], obj, event_data
+                    ctx, saved_command['func_obj'], event_data
                 )
         else:
+            gather = []
             for func in storage_box.commands:
                 if func.func_obj.__name__ == command:
-                    ctx.cmd = func.names
-                    return await self._init_func(func.func_obj, ctx, argument)
-                    # return await self.inspect_signature_return(
-                    #     func.func_obj, obj
-                    # )
+                    ctx.cmd = func.names[-1] \
+                        if type(func.names) is list \
+                        else func.names
+
+                    if func.show_snackbar is not None:
+                        event_data['type'] = 'show_snackbar'
+                        event_data['text'] = func.show_snackbar
+                        gather.append(
+                            self.api.method(
+                                'messages.sendMessageEventAnswer',
+                                {
+                                    "event_id": obj.event_id,
+                                    "user_id": obj.user_id,
+                                    "peer_id": obj.peer_id,
+                                    "event_data": json.dumps(event_data)
+                                }
+                            )
+                        )
+                    gather.append(self._init_func(func.func_obj, ctx, argument))
+                    await asyncio.gather(*gather)
+                    return
 
         if event_data == {}:
             return
@@ -275,23 +321,9 @@ class Bot(LongPoll, Commands):
             }
         )
 
-    async def inspect_signature_return(self, func, obj):
-        parameters = inspect.signature(
-            func
-        ).parameters
-        if len(parameters) == 0:
-            return await func()
-        return await func(
-            Validator(
-                self, obj, self.api,
-                self._check,
-                debug=self._debug,
-                setup=self._state
-            )
-        )
-
+    @staticmethod
     async def inspect_signature_executions(
-            self, func, obj, event_data
+            ctx: Validator, func, event_data: dict
     ):
         parameters = inspect.signature(
             func
@@ -299,12 +331,5 @@ class Bot(LongPoll, Commands):
         if len(parameters) == 0:
             event_data['text'] = await func()
         else:
-            event_data['text'] = await func(
-                Validator(
-                    self, obj, self.api,
-                    self._check,
-                    debug=self._debug,
-                    setup=self._state
-                )
-            )
+            event_data['text'] = await func(ctx)
         return event_data

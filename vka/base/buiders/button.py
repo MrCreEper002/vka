@@ -78,7 +78,7 @@ class _ClickableColoredButton(_ColoredButton):
 
 class _CallableColoredButton(_ColoredButton):
     # handler :ButtonCallbackHandler
-    def on_called(self, handler: ButtonCallbackHandler, **kwargs):
+    def on_called(self, handler: [ButtonCallbackHandler, typing.Any], **kwargs):
         return self._on_action(handler.__name__, **kwargs)
 
 

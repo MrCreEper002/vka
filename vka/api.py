@@ -1,4 +1,5 @@
 import asyncio
+import enum
 import json
 import random
 
@@ -18,20 +19,41 @@ def version_api():
     return "5.131"
 
 
+class LANG(enum.Enum):
+    """
+    LANG.RU.value
+    """
+    RU: int = 0  # русский
+    UK: int = 1  # украинский
+    BE: int = 2  # белорусский
+    EN: int = 3  # английский
+    ES: int = 4  # испанский
+    FI: int = 5  # финский
+    DE: int = 6  # немецкий
+    IT: int = 7  # итальянский
+
+
 class API:
     def __init__(
             self,
             token: str,
             version: Union[float, str] = version_api(),
             url: str = "https://api.vk.com/method/",
-            lang: int = 0
+            lang: [LANG, int] = LANG.RU.value,
+            proxy: str = None,
     ) -> None:
         self._url = url
         self._requests_session = ClientSession()
         self._token = token
         self._method_name = ""
         self._version = version
-        self._lang = lang
+        self._lang = lang,
+        self.proxy = proxy
+        self.headers = {
+            "user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux "
+                          "x86_64; rv:86.0) Gecko/20100101 "
+                          "Firefox/86.0"
+        }
 
     def __getattr__(self, attribute: str):
         if self._method_name:
@@ -43,13 +65,18 @@ class API:
     async def __call__(self, *args, **request_params):
         return await self.method(self._method_name, request_params)
 
-    async def method(self, method_name: str, params: Dict, raw: bool = False, proxy: str = None):
+    async def method(self, method_name: str, params: Dict, raw: bool = False,):
         self._method_name = ''
         params["access_token"] = self._token
         params["v"] = self._version
         params['lang'] = self._lang
         params = _convert_params_for_api(params)
-        resp = await self._requests_session.post(self._url + method_name, data=params, proxy=proxy, headers={"user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:86.0) Gecko/20100101 Firefox/86.0"})
+        resp = await self._requests_session.post(
+            self._url + method_name,
+            data=params,
+            proxy=self.proxy,
+            headers=self.headers
+        )
         response = await resp.json()
         if response.get('error'):
             error = VkApiError(response.get('error'))
@@ -80,7 +107,7 @@ def _convert_param_value(value, /):
         updated_sequence = map(_convert_param_value, value)
         return ",".join(updated_sequence)
 
-    # Все словари, как списки, нужно сдампить в JSON
+    # Все словари, как списки, нужно dumps в JSON
     elif isinstance(value, dict):
         return json.dumps(value)
 

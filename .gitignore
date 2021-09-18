@@ -5,6 +5,10 @@ test
 # Env
 venv
 
+# pypy
+dist
+vka.egg-info
+
 .DS_Store
 AddBot
 .idea
