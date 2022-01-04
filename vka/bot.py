@@ -44,7 +44,7 @@ class Commands:
     @staticmethod
     def click(func):
         """
-        вешается на функцию где нужно чтобы потом вроверить нажалась ли эта кнопка
+        вешается на функцию где нужно чтобы потом проверить нажималась ли эта кнопка
         """
 
         def wrapper():
@@ -95,7 +95,8 @@ class Commands:
             prefixes: Iterable[str] = (),
             any_text: bool = False,
             lvl: Any = None,
-            show_snackbar: str = None
+            show_snackbar: str = None,
+            custom_answer: str = None
     ):
         def wrapper(func):
             storage_box.commands.append(
@@ -107,6 +108,7 @@ class Commands:
                         'prefixes': prefixes,
                         'lvl': lvl,
                         'show_snackbar': show_snackbar,
+                        'custom_answer': custom_answer,
                     }
                 )
             )
@@ -131,9 +133,9 @@ class Commands:
                     [
                         i
                         for i in command['names']
-                        if i in ctx.msg.text.lower().split(
+                        if i in ' '.join(ctx.msg.text.lower().split(
                                 ' '
-                            )[0:len(i.split(' '))]
+                            )[0:len(i.split(' '))])
                     ]
                 )
                 if cmd in command['names']:
@@ -148,7 +150,8 @@ class Commands:
                 cmd = ctx.msg.text.lower().split(
                     ' '
                 )[0:len(command['names'].split(' '))]
-            if command['names'] in cmd:
+            if command['names'] in cmd \
+                    or command['names'] == ' '.join(cmd[0:len(command['names'])]):
                 ctx.cmd = command['names']
                 await self._init_func(
                     func=command['func_obj'],
@@ -158,13 +161,24 @@ class Commands:
                     ).strip()
                 )
                 continue
+            elif ''.join(command['names']) in ctx.msg.text:
+                await self._init_func(
+                    func=command['func_obj'],
+                    ctx=ctx,
+                    custom_answer=command['custom_answer']
+                )
+                continue
 
     @staticmethod
     async def _init_func(
             func,
             ctx: Validator,
-            argument: str
+            argument: str = '',
+            custom_answer: str = None
     ) -> asyncio.create_task:
+        if custom_answer is not None:
+            return await ctx.answer(custom_answer)
+        logger.info(f'{func=} | {argument=} | {custom_answer=}')
         argument = argument if argument != '' else None
         argument = argument if argument != () else None
         parameters = inspect.signature(func).parameters
@@ -182,18 +196,31 @@ class Bot(LongPoll, Commands):
 
     def run(self, debug: bool = False, setup=None) -> None:
         self._debug = debug
+        # try:
+        #     loop = asyncio.get_event_loop()
+        #     loop.run_until_complete(self._launching_bot(setup))
+        #     loop.close()
+        # except (KeyboardInterrupt, SystemExit):
+        #     return
+        # logger.warning('Остановка бота')
         try:
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(self._async_run(setup))
-            loop.close()
+            asyncio.run(self.async_run(debug, setup))
         except (KeyboardInterrupt, SystemExit):
             return
-        logger.warning('Остановка бота')
 
-    async def _async_run(self, setup):
+    async def async_run(self, debug: bool = False, setup=None) -> None:
+        self._debug = debug
+        try:
+            await self._launching_bot(setup)
+        finally:
+            logger.warning('Остановка бота')
+            await self._lp_close()
+
+    async def _launching_bot(self, setup):
         """
         Производит запуск бота
         """
+        await self._init()
         if setup is not None:
             asyncio.create_task(setup(self))
         self.group_id = (

@@ -1,6 +1,9 @@
 
 # Test
 test
+AddBot
+NotesBot
+CosmoBot
 
 # Env
 venv
@@ -10,7 +13,6 @@ dist
 vka.egg-info
 
 .DS_Store
-AddBot
 .idea
 vka/__pycache__/
 vka/base/__pycache__/

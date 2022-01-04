@@ -2,7 +2,6 @@ import asyncio
 import enum
 import json
 import random
-
 from attrdict import AttrDict
 from typing import Union, Dict
 from aiohttp import ClientSession
@@ -43,7 +42,7 @@ class API:
             proxy: str = None,
     ) -> None:
         self._url = url
-        self._requests_session = ClientSession()
+        # self._requests_session = ClientSession()
         self._token = token
         self._method_name = ""
         self._version = version
@@ -54,6 +53,9 @@ class API:
                           "x86_64; rv:86.0) Gecko/20100101 "
                           "Firefox/86.0"
         }
+
+    async def init(self) -> None:
+        self._requests_session = ClientSession()
 
     def __getattr__(self, attribute: str):
         if self._method_name:

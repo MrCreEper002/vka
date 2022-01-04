@@ -11,10 +11,13 @@ class LongPoll:
     """
     def __init__(self, token: str, wait: int = 25, lang: int = 0, version: str = version_api()):
         self._commands = []
-        self._session = ClientSession()
+        # self._session = ClientSession()
         self._token = token
+        self._lang = lang
+        self._version = version
         self._wait = wait
-        self.api = API(self._token, lang=lang, version=version)
+        # self.api = API(self._token, lang=lang, version=version)
+        self.api = API(self._token, lang=self._lang, version=self._version)
         self.group_id = 0
         self._storage_box = storage_box
         self._state = {}
@@ -23,11 +26,18 @@ class LongPoll:
     def _get(self):
         logger.info(self._state)
 
+    async def _init(self):
+        self._session = ClientSession()
+        await self.api.init()
+
     def __setitem__(self, key, value):
         self._state[key] = value
 
     def __getitem__(self, key):
         return self._state[key]
+
+    def __delitem__(self, key):
+        del self._state[key]
 
     async def _update_long_poll_server(self, ts: bool = True):
         long_poll = await self.api.groups.getLongPollServer(group_id=self.group_id)
