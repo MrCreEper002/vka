@@ -2,12 +2,14 @@ import asyncio
 import enum
 import json
 import random
-from attrdict import AttrDict
+import ssl
 from typing import Union, Dict
-from aiohttp import ClientSession
+from aiohttp import ClientSession, TCPConnector
 from loguru import logger
 
+from vka.base import AttrDict
 from vka.base.exception import VkApiError
+from vka.session_container import SessionContainerMixin
 
 
 def random_() -> random:
@@ -32,7 +34,7 @@ class LANG(enum.Enum):
     IT: int = 7  # итальянский
 
 
-class API:
+class API(SessionContainerMixin):
     def __init__(
             self,
             token: str,
@@ -42,7 +44,6 @@ class API:
             proxy: str = None,
     ) -> None:
         self._url = url
-        # self._requests_session = ClientSession()
         self._token = token
         self._method_name = ""
         self._version = version
@@ -55,7 +56,7 @@ class API:
         }
 
     async def init(self) -> None:
-        self._requests_session = ClientSession()
+        self._requests_session = self._init_aiohttp_session()
 
     def __getattr__(self, attribute: str):
         if self._method_name:
@@ -77,17 +78,22 @@ class API:
             self._url + method_name,
             data=params,
             proxy=self.proxy,
-            headers=self.headers
+            headers=self.headers,
         )
-        response = await resp.json()
-        if response.get('error'):
-            error = VkApiError(response.get('error'))
-            if error.error_code == 6:
-                await asyncio.sleep(0.5)
-                return await self.method(method_name, params)
-            logger.error(error)
-            raise error
-        return AttrDict(response)
+        response = AttrDict((await resp.json()))
+        match response:
+            case {'error': error}:
+                error = VkApiError(error)
+                if error.error_code == 6:
+                    await asyncio.sleep(0.5)
+                    return await self.method(method_name, params)
+                logger.error(error)
+                await self.close()
+                raise error
+            case {'response': _r}:
+                return response.response
+            case _:
+                return response
 
     async def close(self) -> None:
         await self._requests_session.close()
