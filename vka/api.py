@@ -2,9 +2,7 @@ import asyncio
 import enum
 import json
 import random
-import ssl
 from typing import Union, Dict
-from aiohttp import ClientSession, TCPConnector
 from loguru import logger
 
 from vka.base import AttrDict

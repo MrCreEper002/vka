@@ -18,3 +18,5 @@ vka.egg-info
 vka/__pycache__/
 vka/base/__pycache__/
 vka/base/buiders/__pycache__
+vka/chatbot/__pycache__
+vka/chatbot/wrappers/__pycache__
