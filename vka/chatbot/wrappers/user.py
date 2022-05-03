@@ -27,7 +27,7 @@ class User:
         ).replace(
             'ln', self.ln
         ).replace(
-            "full", self.full_name
+            "full_name", self.full_name
         ).replace(
             'id', f"{self.id}"
         )

@@ -2,6 +2,8 @@
 
 #### ``Модуль сделана по основам "vk_api" и "vkquick"`` 
 
+Поддерживает python3.10+
+
 Ниже приведен первый пример, как можно - создать команду, отпарвить сообщение, выполнить метод вк
 ```python
 from vka import ABot, Context, User
@@ -27,7 +29,7 @@ async def hello_world(ctx: Context):
     #   )
     
     # чтобы получить пользователя который написал команду
-    user = User((await ctx.fetch_sender()).response[0])
+    user = await ctx.fetch_sender()
     """
         id              - id
         fn              - имя

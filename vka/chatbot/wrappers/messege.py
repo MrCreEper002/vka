@@ -2,6 +2,7 @@ import datetime
 import json
 
 from vka.base.attrdict import AttrDict
+# from vka.base.wrapper import Event
 
 
 def peer_id():
@@ -10,8 +11,8 @@ def peer_id():
 
 class Message:
 
-    def __init__(self):
-        self.message = None
+    def __init__(self, message):
+        self.message = message
 
     @property
     def date(self) -> datetime:
@@ -72,7 +73,7 @@ class Message:
         return self.message.attachments
 
     @property
-    def reply_message(self) -> str:
+    def reply_message(self) -> AttrDict:
         """ Сообщение, в ответ на которое отправлено текущее """
         return self.message.reply_message
 

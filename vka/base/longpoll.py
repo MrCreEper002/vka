@@ -1,19 +1,28 @@
 import asyncio
+from traceback import format_exc
+
+import typing
+
+import aiohttp
+
 from vka.api import API, version_api
 from loguru import logger
 from vka.base import AttrDict
 from vka.base.wrapper import EventBase
+from vka.chatbot import KeyAndBoxStorage
 
 
-class LongPoll:
+class LongPoll(KeyAndBoxStorage):
     """
-    ЛонгПул который получает сообщения присылаемые пользователями боту
+
     """
 
     def __init__(
             self, token: str, debug: bool = False,
-            wait: int = 25, lang: int = 0, version: str = version_api()
+            wait: int = 25, lang: int = 0, version: str = version_api(),
+            requests_session: typing.Optional[aiohttp.ClientSession] = None,
     ):
+
         self._token = token
         self._lang = lang
         self._version = version
@@ -58,7 +67,7 @@ class LongPoll:
             case _:
                 self._ts = response.ts
                 return EventBase(response)
-        return []
+        return await self._check()
 
     async def _listen(self):
         try:
@@ -69,7 +78,12 @@ class LongPoll:
                 except asyncio.TimeoutError:
                     continue
                 except Exception as vka_error:
-                    logger.error(vka_error)
+                    logger.error(format_exc())
+                    if str(vka_error) in 'Session is closed':
+                        logger.success(f"Аварийная остановка бота -> @club{self.group_id}")
+                        await self._lp_close()
+                        return
+                    await asyncio.sleep(1)
                     continue
         finally:
             logger.success(f"Остановка бота -> @club{self.group_id}")
@@ -78,4 +92,9 @@ class LongPoll:
 
     async def _lp_close(self):
         await self.api.close()
+        self.__state__.clear()
+        self.__message_ids__.clear()
+        self.__commands__.clear()
+        self.__addition__.clear()
+        self.__callback_action__.clear()
 

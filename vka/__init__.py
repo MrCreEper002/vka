@@ -1,4 +1,4 @@
-from vka.api import API, LANG
+from vka.api import API, LANG, random_
 from vka.chatbot.context import Context
 from vka.bot import ABot
 from vka.base.buiders.keyboard import Keyboard

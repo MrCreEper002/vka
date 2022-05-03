@@ -1,1 +1,3 @@
-from .storage import KeyAndBoxStorage
+from .storage import (
+    KeyAndBoxStorage
+)

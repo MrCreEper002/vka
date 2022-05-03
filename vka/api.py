@@ -2,9 +2,9 @@ import asyncio
 import enum
 import json
 import random
-from typing import Union, Dict
+from typing import Union, Dict, Optional
+import aiohttp
 from loguru import logger
-
 from vka.base import AttrDict
 from vka.base.exception import VkApiError
 from vka.session_container import SessionContainerMixin
@@ -40,7 +40,9 @@ class API(SessionContainerMixin):
             url: str = "https://api.vk.com/method/",
             lang: [LANG, int] = LANG.RU.value,
             proxy: str = None,
+            requests_session: Optional[aiohttp.ClientSession] = None,
     ) -> None:
+        SessionContainerMixin.__init__(self, requests_session=requests_session)
         self._url = url
         self._token = token
         self._method_name = ""
@@ -72,13 +74,13 @@ class API(SessionContainerMixin):
         params["v"] = self._version
         params['lang'] = self._lang
         params = _convert_params_for_api(params)
-        resp = await self._requests_session.post(
+        response = await self._requests_session.post(
             self._url + method_name,
             data=params,
             proxy=self.proxy,
             headers=self.headers,
         )
-        response = AttrDict((await resp.json()))
+        response = AttrDict((await response.json()))
         match response:
             case {'error': error}:
                 error = VkApiError(error)
@@ -86,7 +88,7 @@ class API(SessionContainerMixin):
                     await asyncio.sleep(0.5)
                     return await self.method(method_name, params)
                 logger.error(error)
-                await self.close()
+                # await self.close()
                 raise error
             case {'response': _r}:
                 return response.response
