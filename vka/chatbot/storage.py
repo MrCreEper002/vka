@@ -12,22 +12,13 @@ class KeyAndBoxStorage:
     __addition__: dict = {}
     __callback_action__: dict = {}
 
-    def __getattr__(self, key):
-        return self.__state__[key]
-
-    def __setattr__(self, key, value):
+    def set_item(self, key, value):
         self.__state__[key] = value
 
-    def __delattr__(self, item):
-        del self.__state__[item]
-
-    def __setitem__(self, key, value):
-        self.__state__[key] = value
-
-    def __getitem__(self, key):
+    def get_item(self, key):
         return self.__state__[key]
 
-    def __delitem__(self, item):
+    def del_item(self, item):
         del self.__state__[item]
 
 

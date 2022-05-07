@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import json
 from typing import Any
 from loguru import logger
@@ -16,27 +17,22 @@ class ABot(LongPoll):
 
     def run(self, debug: bool = False):
         try:
-            asyncio.run(self.async_run())
+            asyncio.run(self.async_run(debug))
         except (KeyboardInterrupt, SystemExit):
             return
 
     async def async_run(self, debug: bool = False):
-        await self._init()
+        await self.async_init()
         await self._launching_bot(debug)
 
     async def _launching_bot(self, debug: bool):
-        async for event in self._listen():
+        async for event in self.listen():
             if event.updates:
                 asyncio.create_task(self._wiretapping_type(event.updates, debug))
 
     async def _wiretapping_type(self, updates, debug: bool):
-        """
-        Сделать чтобы можно было самому дописывать какие события нужно ловить
-        пример кода как можно сделать:
-            match event.type:
-                case types if types in ['message_new']:
-                    types
-        """
+        # TODO: Сделать чтобы можно было дописывать какие события нужно обрабатывать
+
         for i in updates:
             if debug:
                 logger.debug(i)
@@ -47,7 +43,7 @@ class ABot(LongPoll):
                     logger.opt(colors=True).info(
                         f'<red>[New message]</red> '
                         f'<white>peer_id: {ctx.msg.peer_id}</white> '
-                        f'<blue>from_id: https://vk.com/id{ctx.msg.from_id}</blue> '
+                        f'<blue>from_id: https://vk.com/id{ctx.msg.from_id}<blue> '
                         f'<green>message: {ctx.msg.text}</green>'
                     )
                     if 'payload' in event.message:
@@ -62,8 +58,8 @@ class ABot(LongPoll):
                 case 'message_event':
                     logger.opt(colors=True).info(
                         f'<red>[Message event]</red> '
-                        f'<blue>peer_id: {ctx.msg.peer_id} '
-                        f'from_id: https://vk.com/id{ctx.msg.from_id}</blue> '
+                        f'<white>peer_id: {ctx.msg.peer_id}</white> '
+                        f'<blue>from_id: https://vk.com/id{ctx.msg.from_id}</blue> '
                         f'<green>message: {ctx.msg.text}</green>'
                     )
                     asyncio.create_task(
@@ -74,9 +70,6 @@ class ABot(LongPoll):
     async def _shipment_data_message_event(self, ctx: Context, obj):
         """
         Обрабатывает нажатие на кнопку
-        то есть если пользователь нажмет на кнопку то в функции
-        может что-то выполнится
-        эта функция не отвечает за показ выполнилось функция или нет
         """
         event_data = {}
         try:
@@ -90,15 +83,16 @@ class ABot(LongPoll):
                 return
 
         saved_command = self.__callback_action__.get(command)
+        check = CheckingMessageForCommand(ctx)
 
         if saved_command:
             if saved_command.get('click'):
-                return await self._init_func(saved_command['func_obj'], ctx, argument)
+                return await check.init_func(saved_command['func_obj'], ctx, argument)
             if saved_command['callback']:
-                await self._init_func(saved_command['func_obj'], ctx, argument)
+                await check.init_func(saved_command['func_obj'], ctx, argument)
             if saved_command['show_snackbar']:
                 event_data['type'] = 'show_snackbar'
-                event_data = await self.inspect_signature_executions(
+                event_data = await self._inspect_signature_executions(
                     ctx, saved_command['func_obj'], event_data
                 )
         else:
@@ -123,8 +117,7 @@ class ABot(LongPoll):
                                 }
                             )
                         )
-                    check = CheckingMessageForCommand(ctx)
-                    gather.append(check._init_func(func['func_obj'], ctx, argument))
+                    gather.append(check.init_func(func['func_obj'], ctx, argument))
                     await asyncio.gather(*gather)
                     return
 
@@ -140,12 +133,26 @@ class ABot(LongPoll):
             }
         )
 
-    def command(
+    @staticmethod
+    async def _inspect_signature_executions(
+            ctx: Context, func, event_data: dict
+    ):
+        parameters = inspect.signature(
+            func
+        ).parameters
+        if len(parameters) == 0:
+            event_data['text'] = await func()
+        else:
+            event_data['text'] = await func(ctx)
+        return event_data
+
+    def add_command(
             self, *custom_filter,
             commands=(), any_text: bool = False,
             lvl: Any = None, show_snackbar: str = None,
             custom_answer: str = None
     ):
+        """ используется декоратором на функцией """
         def wrapper(func):
             self.register_command(
                 func=func, *custom_filter, commands=commands,
@@ -162,6 +169,7 @@ class ABot(LongPoll):
             lvl: Any = None, show_snackbar: str = None,
             custom_answer: str = None
     ):
+        """ можно использовать для добавлении команд без декораторов """
         self.__commands__.append(
             {
                 'func_obj': func,
@@ -174,12 +182,14 @@ class ABot(LongPoll):
             }
         )
 
-    def click_callback(
+    def add_click_callback(
             self, *custom_filter,
             callback: bool = False,
             show_snackbar: bool = False,
     ):
         """
+        используется декоратором на функцией
+
         :param callback:
         :param show_snackbar: исчезающее сообщение на экране
 
@@ -204,9 +214,11 @@ class ABot(LongPoll):
             callback: bool = False,
             show_snackbar: bool = False,
     ):
+        """ можно использовать для добавлении кнопок без декораторов """
         self.__callback_action__[func.__name__] = {
             'func_obj': func,
             'custom_filter': custom_filter,
             'callback': callback,
             'show_snackbar': show_snackbar
         }
+

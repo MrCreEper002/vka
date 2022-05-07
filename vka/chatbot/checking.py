@@ -22,7 +22,7 @@ class CheckingMessageForCommand:
 
             match command:
                 case {'any_text': True}:
-                    await self._init_func(
+                    await self.init_func(
                         func=command['func_obj'],
                         ctx=self._ctx,
                         command=cmd,
@@ -33,7 +33,7 @@ class CheckingMessageForCommand:
                     continue
                 case {'commands': _command} if _command in cmd:
                     self._ctx.command = _command
-                    await self._init_func(
+                    await self.init_func(
                         func=command['func_obj'],
                         ctx=self._ctx,
                         command=cmd,
@@ -42,7 +42,7 @@ class CheckingMessageForCommand:
                     continue
                 case {'commands': _command} if ''.join(_command) in self._ctx.msg.text:
                     logger.warning(_command)
-                    await self._init_func(
+                    await self.init_func(
                         func=command['func_obj'],
                         ctx=self._ctx,
                         command=cmd,
@@ -51,7 +51,7 @@ class CheckingMessageForCommand:
                     continue
 
     @staticmethod
-    async def _init_func(
+    async def init_func(
             func,
             ctx: Context,
             command: str,
@@ -85,10 +85,9 @@ class CheckingMessageForCommand:
             ]
         )
         if cmd in command['commands']:
-            await self._init_func(
+            await self.init_func(
                 func=command['func_obj'],
                 ctx=self._ctx,
                 command=cmd,
                 argument=self._ctx.msg.text.replace(cmd, '').strip()
             )
-

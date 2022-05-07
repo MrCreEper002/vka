@@ -2,12 +2,16 @@ import asyncio
 import enum
 import json
 import random
-from typing import Union, Dict, Optional
+import ssl
+from typing import Union, Optional, Any
 import aiohttp
+import certifi
 from loguru import logger
 from vka.base import AttrDict
 from vka.base.exception import VkApiError
-from vka.session_container import SessionContainerMixin
+
+
+ssl_context = ssl.create_default_context(cafile=certifi.where())
 
 
 def random_() -> random:
@@ -32,31 +36,48 @@ class LANG(enum.Enum):
     IT: int = 7  # итальянский
 
 
-class API(SessionContainerMixin):
+class API:
+
+    """
+    Пример использование класса API:
+
+    async def test_api():
+        api = API(token='token')
+        # сперва нужно создать сессию
+        await api.async_init()
+
+        # Есть два варианта обращение к API методам отличие лишь в написание
+        # первый вариант
+        users_get = await api.method('users.get', {'user_ids': 1})
+        # второй вариант
+        users_get = api.users.get(user_ids=1)
+
+        # не забываем закрыть сессию
+        await api.close()
+
+    asyncio.run(test_api)
+    """
+
     def __init__(
             self,
+            *,
             token: str,
             version: Union[float, str] = version_api(),
             url: str = "https://api.vk.com/method/",
             lang: [LANG, int] = LANG.RU.value,
             proxy: str = None,
-            requests_session: Optional[aiohttp.ClientSession] = None,
     ) -> None:
-        SessionContainerMixin.__init__(self, requests_session=requests_session)
         self._url = url
         self._token = token
         self._method_name = ""
         self._version = version
         self._lang = lang,
         self.proxy = proxy
-        self.headers = {
-            "user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux "
-                          "x86_64; rv:86.0) Gecko/20100101 "
-                          "Firefox/86.0"
-        }
+        self.request: Optional[aiohttp.ClientSession] = None
 
-    async def init(self) -> None:
-        self._requests_session = self._init_aiohttp_session()
+    async def async_init(self) -> None:
+        """ Создание сессии """
+        self.request = aiohttp.ClientSession()
 
     def __getattr__(self, attribute: str):
         if self._method_name:
@@ -68,17 +89,18 @@ class API(SessionContainerMixin):
     async def __call__(self, *args, **request_params):
         return await self.method(self._method_name, request_params)
 
-    async def method(self, method_name: str, params: Dict, raw: bool = False,):
+    async def method(self, method_name: str, params: dict):
+        """ Обращение к API методу вк """
         self._method_name = ''
         params["access_token"] = self._token
         params["v"] = self._version
         params['lang'] = self._lang
         params = _convert_params_for_api(params)
-        response = await self._requests_session.post(
+        response = await self.request.post(
             self._url + method_name,
             data=params,
             proxy=self.proxy,
-            headers=self.headers,
+            ssl=ssl_context
         )
         response = AttrDict((await response.json()))
         match response:
@@ -88,7 +110,6 @@ class API(SessionContainerMixin):
                     await asyncio.sleep(0.5)
                     return await self.method(method_name, params)
                 logger.error(error)
-                # await self.close()
                 raise error
             case {'response': _r}:
                 return response.response
@@ -96,17 +117,16 @@ class API(SessionContainerMixin):
                 return response
 
     async def close(self) -> None:
-        await self._requests_session.close()
+        await self.requests_session.close()
 
 
-def _convert_param_value(value, /):
+def _convert_param_value(value: Any, /) -> Any:
     """
     Конвертирует параметр API запроса в соответствии
     с особенностями API и дополнительными удобствами
-    Arguments:
-        value: Текущее значение параметра
-    Returns:
-        Новое значение параметра
+
+    value: Текущее значение параметра
+
     """
     # Для всех перечислений функция вызывается рекурсивно.
     # Массивы в запросе распознаются вк только если записать их как строку,
@@ -127,15 +147,14 @@ def _convert_param_value(value, /):
         return str(value)
 
 
-def _convert_params_for_api(params: dict, /):
+def _convert_params_for_api(params: dict, /) -> dict:
     """
     Конвертирует словарь из параметров для метода API,
     учитывая определенные особенности
 
-    Arguments:
-        params: Параметры, передаваемые для вызова метода API
+    params: Параметры, передаваемые для вызова метода API
 
-    Returns:
+    вывод:
         Новые параметры, которые можно передать
         в запрос и получить ожидаемый результат
 

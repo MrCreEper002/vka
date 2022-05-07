@@ -1,11 +1,8 @@
 import asyncio
 from traceback import format_exc
-
-import typing
-
+from typing import Optional
 import aiohttp
-
-from vka.api import API, version_api
+from vka.api import version_api, API, ssl_context
 from loguru import logger
 from vka.base import AttrDict
 from vka.base.wrapper import EventBase
@@ -14,25 +11,26 @@ from vka.chatbot import KeyAndBoxStorage
 
 class LongPoll(KeyAndBoxStorage):
     """
-
+    LongPoll
     """
 
     def __init__(
-            self, token: str, debug: bool = False,
-            wait: int = 25, lang: int = 0, version: str = version_api(),
-            requests_session: typing.Optional[aiohttp.ClientSession] = None,
+            self, token: str,
+            wait: int = 25, lang: int = 0,
+            version: str = version_api(),
     ):
-
-        self._token = token
-        self._lang = lang
-        self._version = version
+        self.token = token
+        self.lang = lang
+        self.version = version
         self._wait = wait
-        self.api = API(token=self._token, lang=self._lang, version=self._version)
+        self.api: Optional[API] = None
         self.group_id = None
-        self.debug = debug
+        self.request: Optional[aiohttp.ClientSession] = None
 
-    async def _init(self):
-        await self.api.init()
+    async def async_init(self):
+        self.request = aiohttp.ClientSession()
+        self.api = API(token=self.token)
+        await self.api.async_init()
         self.group_id = (
             await self.api.method('groups.getById', {})
         )[0].id
@@ -52,10 +50,10 @@ class LongPoll(KeyAndBoxStorage):
             'ts': self._ts,
             'wait': self._wait,
         }
-        res = await self.api._requests_session.post(
-            url=self._url, data=data, timeout=self._wait+10
+        response = await self.request.post(
+            url=self._url, data=data, timeout=self._wait+10, ssl=ssl_context
         )
-        response = AttrDict(await res.json())
+        response = AttrDict(await response.json())
 
         match response:
             case {'failed': failed} if failed == 1:
@@ -69,7 +67,7 @@ class LongPoll(KeyAndBoxStorage):
                 return EventBase(response)
         return await self._check()
 
-    async def _listen(self):
+    async def listen(self):
         try:
             logger.success(f"Запуск бота в группе -> @club{self.group_id}")
             while True:
@@ -91,10 +89,10 @@ class LongPoll(KeyAndBoxStorage):
             return
 
     async def _lp_close(self):
-        await self.api.close()
+        await self.api.request.close()
+        await self.request.close()
         self.__state__.clear()
         self.__message_ids__.clear()
         self.__commands__.clear()
         self.__addition__.clear()
         self.__callback_action__.clear()
-
