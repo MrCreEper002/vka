@@ -17,3 +17,6 @@ class VkApiError(Exception):
 
 # class Captcha(VkApiError):
 #     def __init__(self, ):
+
+
+class VkaError(Exception): ...

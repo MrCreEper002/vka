@@ -54,7 +54,7 @@ class Event:
         return f'{self._event}'
 
 
-class Wrapper:
+class Wrapper(dict):
 
     def __init__(self, fields: AttrDict):
         if isinstance(fields, dict):
@@ -139,15 +139,15 @@ class Message(Wrapper):
         return None
 
     @property
-    def action(self) -> list:
+    def action(self) -> AttrDict:
         """ Информация о сервисном действии с чатом """
-        return self.fields.action
+        return AttrDict(self.fields.action)
 
     @property
     def payload(self) -> AttrDict | None:
         """ Сервисное поле для сообщений ботам (полезная нагрузка) """
         if "payload" in self.fields:
-            return AttrDict(json.loads(self.fields.payload))
+            return AttrDict(self.fields.payload)
         return None
 
     @property
@@ -155,14 +155,11 @@ class Message(Wrapper):
         return bool(self.fields.is_hidden)
 
     @property
-    def chat_id(self) -> int:
+    def chat_id(self) -> int | bool:
         """ Идентификатор беседы """
         chat_id = self.peer_id - peer_id()
         if chat_id < 0:
-            raise ValueError(
-                "Can't get `chat_id` if message wasn't sent in a chat"
-            )
-
+            return False
         return chat_id
 
     def __repr__(self):

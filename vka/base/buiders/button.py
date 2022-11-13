@@ -83,7 +83,8 @@ class _CallableColoredButton(_ColoredButton):
 
 
 class _UncoloredButton(InitializedButton):
-    ...
+    def on_called(self, handler: [ButtonCallbackHandler, typing.Any], **kwargs):
+        return self._on_action(handler.__name__, **kwargs)
 
 
 def _convert_payload(func):

@@ -19,6 +19,7 @@ class LongPoll(KeyAndBoxStorage):
             wait: int = 25, lang: int = 0,
             version: str = version_api(),
     ):
+        KeyAndBoxStorage.__init__(self)
         self.token = token
         self.lang = lang
         self.version = version
@@ -54,7 +55,6 @@ class LongPoll(KeyAndBoxStorage):
             url=self._url, data=data, timeout=self._wait+10, ssl=ssl_context
         )
         response = AttrDict(await response.json())
-
         match response:
             case {'failed': failed} if failed == 1:
                 self._ts = response.ts
@@ -69,7 +69,7 @@ class LongPoll(KeyAndBoxStorage):
 
     async def listen(self):
         try:
-            logger.success(f"Запуск бота в группе -> @club{self.group_id}")
+            logger.success(f"[vka] Запуск бота в группе -> @club{self.group_id}")
             while True:
                 try:
                     yield await self._check()
@@ -78,13 +78,13 @@ class LongPoll(KeyAndBoxStorage):
                 except Exception as vka_error:
                     logger.error(format_exc())
                     if str(vka_error) in 'Session is closed':
-                        logger.success(f"Аварийная остановка бота -> @club{self.group_id}")
+                        logger.success(f"[vka] Аварийная остановка бота -> @club{self.group_id}")
                         await self._lp_close()
                         return
                     await asyncio.sleep(1)
                     continue
         finally:
-            logger.success(f"Остановка бота -> @club{self.group_id}")
+            logger.success(f"[vka] Остановка бота -> @club{self.group_id}")
             await self._lp_close()
             return
 

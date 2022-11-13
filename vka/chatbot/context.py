@@ -43,9 +43,11 @@ class Context:
         Метод для получение нового сообщение
         По умолчанию реагирует на того пользователя который написал команду.
 
+        any_user: реагирует на любого человека
+
         Пример:
-            async for new_ctx in ctx.receive_new_message():
-                await new_ctx.reply('привет')
+            >>> async for new_ctx in ctx.receive_new_message():
+            >>>    await new_ctx.reply('привет')
         """
         async for new_event in self.receiving():
             if new_event.updates:
@@ -54,10 +56,11 @@ class Context:
                     logger.success(event)
                     ctx = Context(event=event, api=self.api, bot=self)
                     if event.type in ['message_new', 'message_event']:
-                        if any_user:
+                        if any_user and ctx.msg.peer_id == self.msg.peer_id:
                             yield ctx
                         else:
-                            if self.msg.from_id == ctx.msg.from_id:
+                            if self.msg.from_id == ctx.msg.from_id \
+                                    and ctx.msg.peer_id == self.msg.peer_id:
                                 yield ctx
 
     async def answer(
@@ -74,7 +77,7 @@ class Context:
             group_id: Optional[int] = None,
             keyboard: Optional[Union[str, json.dumps]] = None,
             payload: Optional[str] = None,
-            dont_parse_links: Optional[bool] = None,
+            dont_parse_links: Optional[int] = None,
             disable_mentions: bool = True,
             intent: Optional[str] = None,
             expire_ttl: Optional[int] = None,
@@ -130,8 +133,8 @@ class Context:
     async def edit(
             self,
             message: str,
-            conversation_message_id: int,
-            *,
+            conversation_message_id: int = None,
+            # *,
             message_id: Optional[int] = None,
             lat: Optional[float] = None,
             long: Optional[float] = None,
@@ -159,9 +162,7 @@ class Context:
         """
         данная функция означает что будет изменено последнее сообщение бота
         """
-
-        answer = await self.answer(message, **kwargs)
-        logger.warning(answer)
+        await self.edit(message, self.msg.conversation_message_id, **kwargs)
 
     async def fetch_sender(
             self,
@@ -189,8 +190,8 @@ class Context:
             • all=True: все эти параметры сразу;
 
         Пример:
-            user = await ctx.fetch_sender()
-            await ctx.answer(f'Привет {user:fn}')
+            >>> user = await ctx.fetch_sender()
+            >>> await ctx.answer(f'Привет {user:fn}')
 
             • id              - id
             • fn              - имя
@@ -232,13 +233,15 @@ class Context:
         )
         if users_info == ():
             return []
-        if isinstance(user_ids, int):
+        elif isinstance(user_ids, int):
+            return User(users_info[0])
+        elif len(users_info) == 1:
             return User(users_info[0])
         return [User(user) for user in users_info]
 
     async def user_get(
             self,
-            user_ids: list | int,
+            user_ids: list | int | str,
             fields: List[str] = None,
             name_case: str = None
     ):
@@ -253,8 +256,11 @@ class Context:
                 'name_case': name_case
             }
         )
-        if isinstance(user_ids, int):
-            return User(users_info[0])
+        if isinstance(user_ids, int) or isinstance(user_ids, str):
+            try:
+                return User(users_info[0])
+            except IndexError:
+                ...
         return [User(user) for user in users_info]
 
     def button_checking(

@@ -109,7 +109,7 @@ class API:
                 if error.error_code == 6:
                     await asyncio.sleep(0.5)
                     return await self.method(method_name, params)
-                logger.error(error)
+                logger.error(response)
                 raise error
             case {'response': _r}:
                 return response.response
@@ -117,7 +117,7 @@ class API:
                 return response
 
     async def close(self) -> None:
-        await self.requests_session.close()
+        await self.request.close()
 
 
 def _convert_param_value(value: Any, /) -> Any:

@@ -14,6 +14,7 @@ class CheckingMessageForCommand:
     async def check_message(
             self, all_commands: list
     ):
+
         for command in all_commands:
             cmd = ''
             match command['commands']:
@@ -40,8 +41,7 @@ class CheckingMessageForCommand:
                         argument=self._ctx.msg.text.lower().replace(_command, '').strip()
                     )
                     continue
-                case {'commands': _command} if ''.join(_command) in self._ctx.msg.text:
-                    logger.warning(_command)
+                case {'commands': _command} if ''.join(_command) == self._ctx.msg.text:
                     await self.init_func(
                         func=command['func_obj'],
                         ctx=self._ctx,
