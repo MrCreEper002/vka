@@ -15,71 +15,114 @@ sys.dont_write_bytecode = True
 
 class ABot(LongPoll):
 
-    def run(self, debug: bool = False, custom_func=None):
+    """
+    param debug:
+        Включение debug режима
+    param custom_event_name:
+        Чтобы бот мог отловить другое событие
+        [
+            'wall_post_new', 'message_edit'
+        ]
+    param custom_event_func:
+        ctx - обязательный параметр
+        async def custom_event_func(ctx: Context): ...
+    param custom_func:
+        async def custom_func(bot: ABot): ...
+
+    """
+
+    def run(
+            self, debug: bool = False,
+            custom_event_name: list[str] = None,
+            custom_event_func=None,
+            custom_func=None
+    ):
         try:
-            asyncio.run(self.async_run(debug, custom_func))
+            asyncio.run(
+                self.async_run(
+                    debug=debug,
+                    custom_event_name=custom_event_name,
+                    custom_event_func=custom_event_func,
+                    custom_func=custom_func,
+                )
+            )
         except (KeyboardInterrupt, SystemExit):
             return
 
-    async def async_run(self, debug: bool = False, custom_func=None):
+    async def async_run(
+            self, debug: bool = False,
+            custom_event_name: list[str] = None,
+            custom_event_func=None,
+            custom_func=None,
+    ):
         await self.async_init()
+        self.custom_event_name = custom_event_name
+        self.custom_event_func = custom_event_func
         if custom_func is not None:
             asyncio.create_task(custom_func(self))
         await self._launching_bot(debug)
 
-    async def _launching_bot(self, debug: bool):
+    async def _launching_bot(
+            self, debug: bool,
+    ):
         async for event in self.listen():
             if event.updates:
                 asyncio.create_task(
-                    self._wiretapping_type(event.updates, debug)
+                    self._wiretapping_type(
+                        updates=event.updates, debug=debug
+                    )
                 )
 
-    async def _wiretapping_type(self, updates, debug: bool):
-        # TODO: Сделать чтобы можно было дописывать какие события
-        #  нужно обрабатывать
-
+    async def _wiretapping_type(
+            self, updates, debug: bool,
+    ):
         for i in updates:
             if debug:
                 logger.opt(colors=True).debug(
                     f'[vka {self.group_id}] {i}'
                 )
-            event = Event(i)
-            ctx = Context(event=event, api=self.api, bot=self)
-            match i.type:
-                case 'message_new':
-                    if 'payload' in event.message:
-                        asyncio.create_task(
-                            self._shipment_data_message_event(
-                                ctx=ctx, obj=event.obj
-                            )
-                        )
-                        continue
-                    logger.opt(colors=True).info(
-                        f'[vka {self.group_id}] '
-                        f'<red>type: New message</red> '
-                        f'<white>peer_id: {ctx.msg.peer_id}</white> '
-                        f'<blue>from_id: https://vk.com/id'
-                        f'{ctx.msg.from_id}</blue> '
-                        f'<green>message: {ctx.msg.text}</green>'
-                    )
-                    check = CheckingMessageForCommand(ctx)
-                    await check.check_message(self.__commands__)
+            await self._defining_events(update=i)
 
-                    continue
-                case 'message_event':
-                    logger.opt(colors=True).info(
-                        f'[vka {self.group_id}] '
-                        f'<red>type: Message event</red> '
-                        f'<white>peer_id: {ctx.msg.peer_id}</white> '
-                        f'<blue>from_id: https://vk.com/id'
-                        f'{ctx.msg.from_id}</blue> '
+    async def _defining_events(self, update):
+        """
+        Определяем какой событие пришло от сервера
+        """
+        event = Event(update)
+        ctx = Context(event=event, api=self.api, bot=self)
+        if self.custom_event_name is not None and update.type in self.custom_event_name:
+            if self.custom_event_func is not None:
+                return await self.custom_event_func(ctx)
+        elif update.type == 'message_new':
+            logger.opt(colors=True).info(
+                f'[vka {self.group_id}] '
+                f'<red>type: New message</red> '
+                f'<white>peer_id: {ctx.msg.peer_id}</white> '
+                f'<blue>from_id: '
+                f'{ctx.msg.from_id}</blue> '
+                f'<green>message: {ctx.msg.text}</green>'
+            )
+            if 'payload' in event.message:
+                asyncio.create_task(
+                    self._shipment_data_message_event(
+                        ctx=ctx, obj=event.obj
                     )
-                    asyncio.create_task(
-                        self._shipment_data_message_event(
-                            ctx=ctx, obj=event.obj
-                        )
-                    )
-                    continue
+                )
+                return
+            check = CheckingMessageForCommand(ctx)
+            await check.check_message(self.__commands__)
+        elif update.type == 'message_event':
+            logger.opt(colors=True).info(
+                f'[vka {self.group_id}] '
+                f'<red>type: Message event</red> '
+                f'<white>peer_id: {ctx.msg.peer_id}</white> '
+                f'<blue>from_id: '
+                f'{ctx.msg.from_id}</blue> '
+            )
+            asyncio.create_task(
+                self._shipment_data_message_event(
+                    ctx=ctx, obj=event.obj
+                )
+            )
 
     async def _shipment_data_message_event(self, ctx: Context, obj):
         """
