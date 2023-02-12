@@ -1,12 +1,10 @@
 import asyncio
-import inspect
-import json
 from typing import Any
 from loguru import logger
-from vka.base import AttrDict
+
 from vka.base.longpoll import LongPoll
 from vka.base.wrapper import Event
-from vka.chatbot.checking import CheckingMessageForCommand
+from vka.chatbot.checking import CheckingEventForCommand
 from vka.chatbot.context import Context
 import sys
 
@@ -89,6 +87,12 @@ class ABot(LongPoll):
         """
         event = Event(update)
         ctx = Context(event=event, api=self.api, bot=self)
+        check = CheckingEventForCommand(
+            ctx=ctx,
+            menu_commands=self.__menu_commands__,
+            callback_action=self.__callback_action__,
+            commands=self.__commands__
+        )
         if self.custom_event_name is not None and update.type in self.custom_event_name:
             if self.custom_event_func is not None:
                 return await self.custom_event_func(ctx)
@@ -103,13 +107,13 @@ class ABot(LongPoll):
             )
             if 'payload' in event.message:
                 asyncio.create_task(
-                    self._shipment_data_message_event(
-                        ctx=ctx, obj=event.obj
+                    check.shipment_data_message_event(
+                        obj=event.obj
                     )
                 )
                 return
-            check = CheckingMessageForCommand(ctx)
-            await check.check_message(self.__commands__)
+            await check.search_for_command_message()
+
         elif update.type == 'message_event':
             logger.opt(colors=True).info(
                 f'[vka {self.group_id}] '
@@ -119,98 +123,10 @@ class ABot(LongPoll):
                 f'{ctx.msg.from_id}</blue> '
             )
             asyncio.create_task(
-                self._shipment_data_message_event(
-                    ctx=ctx, obj=event.obj
+                check.shipment_data_message_event(
+                    obj=event.obj,
                 )
             )
-
-    async def _shipment_data_message_event(self, ctx: Context, obj):
-        """
-        Обрабатывает нажатие на кнопку
-        """
-        event_data = {}
-        try:
-            command = obj.payload.command
-            argument = obj.payload.args
-        except (KeyError, AttributeError):
-            try:
-                argument = AttrDict(eval(obj.message.payload))
-                command = eval(obj.message.payload)['command']
-            except (KeyError, AttributeError):
-                return
-        saved_command = self.__callback_action__.get(command)
-        check = CheckingMessageForCommand(ctx)
-        if saved_command:
-            if saved_command.get('click'):
-                return await check.init_func(
-                    saved_command['func_obj'], ctx, command=command, argument=argument
-                )
-            if saved_command['callback']:
-                await check.init_func(
-                    saved_command['func_obj'], ctx, command=command, argument=argument
-                )
-            if saved_command['show_snackbar']:
-                argument = argument if argument != '' else None
-                argument = argument if argument != () else None
-                event_data['type'] = 'show_snackbar'
-                event_data = await self._inspect_signature_executions(
-                    ctx, saved_command['func_obj'], event_data,
-                    argument=argument
-                )
-        else:
-            gather = []
-            for func in self.__commands__:
-                if func['func_obj'].__name__ == command:
-                    # ctx.cmd = func['commands'][-1] \
-                    #     if type(func['commands']) is list \
-                    #     else func['commands']
-
-                    if func['show_snackbar'] is not None:
-                        event_data['type'] = 'show_snackbar'
-                        event_data['text'] = func['show_snackbar']
-                        gather.append(
-                            self.api.method(
-                                'messages.sendMessageEventAnswer',
-                                {
-                                    "event_id": obj.event_id,
-                                    "user_id": obj.user_id,
-                                    "peer_id": obj.peer_id,
-                                    "event_data": json.dumps(event_data)
-                                }
-                            )
-                        )
-                    gather.append(
-                        check.init_func(func['func_obj'], ctx, command=command, argument=argument)
-                    )
-                    await asyncio.gather(*gather)
-                    return
-
-        if event_data == {}:
-            return
-        return await self.api.method(
-            'messages.sendMessageEventAnswer',
-            {
-                "event_id": obj.event_id,
-                "user_id": obj.user_id,
-                "peer_id": obj.peer_id,
-                "event_data": json.dumps(event_data)
-            }
-        )
-
-    @staticmethod
-    async def _inspect_signature_executions(
-            ctx: Context, func, event_data: dict, argument: str
-    ):
-        parameters = inspect.signature(
-            func
-        ).parameters
-        if len(parameters) == 0:
-            event_data['text'] = await func()
-        elif len(parameters) == 1:
-            event_data['text'] = await func(ctx)
-        else:
-            event_data['text'] = await func(ctx, argument)
-        return event_data
 
     def add_command(
             self, *custom_filter,
@@ -218,7 +134,7 @@ class ABot(LongPoll):
             lvl: Any = None, show_snackbar: str = None,
             custom_answer: str = None
     ):
-        """ используется декоратором на функцией """
+        """ используется декоратором над функцией """
         def wrapper(func):
             self.register_command(
                 func=func, *custom_filter, commands=commands,
@@ -264,7 +180,7 @@ class ABot(LongPoll):
             show_snackbar: bool = False,
     ):
         """
-        используется декоратором на функцией
+        используется декоратором над функцией
 
         :param callback:
         :param show_snackbar: исчезающее сообщение на экране

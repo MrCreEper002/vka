@@ -95,4 +95,5 @@ class LongPoll(KeyAndBoxStorage):
         self.__message_ids__.clear()
         self.__commands__.clear()
         self.__addition__.clear()
+        self.__menu_commands__.clear()
         self.__callback_action__.clear()

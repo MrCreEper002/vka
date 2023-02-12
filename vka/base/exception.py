@@ -14,6 +14,9 @@ class VkApiError(Exception):
     def __str__(self):
         return f"[{self.error_code}] {self.error_msg}"
 
+    def __repr__(self):
+        return f"[{self.error_code}] {self.error_msg}"
+
 
 # class Captcha(VkApiError):
 #     def __init__(self, ):

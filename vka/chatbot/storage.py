@@ -9,6 +9,7 @@ class KeyAndBoxStorage:
         self.__state__: dict = {}
         self.__message_ids__: dict = {}
         self.__commands__: list = []
+        self.__menu_commands__: list = []
         self.__addition__: dict = {}
         self.__callback_action__: dict = {}
 
