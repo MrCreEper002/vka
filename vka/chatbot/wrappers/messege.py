@@ -1,5 +1,6 @@
 import datetime
 import json
+import typing
 
 from vka.base.attrdict import AttrDict
 # from vka.base.wrapper import Event
@@ -103,3 +104,13 @@ class Message:
             )
 
         return chat_id
+
+    @property
+    def ref(self) -> typing.Any:
+        """ Произвольный параметр для работы """
+        return self.message.ref
+
+    @property
+    def ref_source(self) -> typing.Any:
+        """ Произвольный параметр для работы """
+        return self.message.ref_source

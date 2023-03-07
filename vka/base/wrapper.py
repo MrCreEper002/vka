@@ -1,6 +1,5 @@
-from loguru import logger
+import typing
 import datetime
-import json
 from vka.base.attrdict import AttrDict
 
 
@@ -57,6 +56,7 @@ class Event:
 class Wrapper(dict):
 
     def __init__(self, fields: AttrDict):
+        super().__init__()
         if isinstance(fields, dict):
             fields = AttrDict(fields)
         self._fields = fields
@@ -80,7 +80,7 @@ class Message(Wrapper):
         """ Идентификатор отправителя """
         try:
             return self.fields.from_id
-        except:
+        except KeyError:
             return self.fields.user_id
 
     @property
@@ -161,6 +161,16 @@ class Message(Wrapper):
         if chat_id < 0:
             return False
         return chat_id
+
+    @property
+    def ref(self) -> typing.Any:
+        """ Произвольный параметр для работы """
+        return self.fields.ref
+
+    @property
+    def ref_source(self) -> typing.Any:
+        """ Произвольный параметр для работы """
+        return self.fields.ref_source
 
     def __repr__(self):
         return f"{self.fields}"
