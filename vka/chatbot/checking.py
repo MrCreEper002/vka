@@ -204,7 +204,12 @@ class CheckingEventForCommand:
             return await ctx.answer(custom_answer)
         argument = argument if argument != '' else None
         argument = argument if argument != () else None
-        parameters = inspect.signature(func).parameters
+        sig = inspect.signature(func)
+
+        parameters = [
+            p for p in sig.parameters.keys()
+            if p not in ['kwargs', 'args']
+        ]
 
         if len(parameters) == 0 and argument is None:
             return asyncio.create_task(func())
