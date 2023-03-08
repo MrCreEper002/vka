@@ -286,7 +286,8 @@ class Context:
             command = eval(str(self.msg.payload))
             if func_name.__name__ == command['command']:
                 if isinstance(any_user, int):
-                    return True
+                    if self.msg.from_id == any_user:
+                        return True
                 elif isinstance(any_user, list):
                     if self.msg.from_id in any_user:
                         return True
