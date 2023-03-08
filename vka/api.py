@@ -7,9 +7,10 @@ from typing import Union, Optional, Any
 import aiohttp
 import certifi
 from loguru import logger
+
 from vka.base import AttrDict
 from vka.base.exception import VkApiError
-
+from vka.chatbot.registration import Registration
 
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 
@@ -115,6 +116,9 @@ class API:
                 return response.response
             case _:
                 return response
+
+    async def register(self, user_id) -> Registration:
+        return Registration(user_id=user_id, request=self.request)
 
     async def close(self) -> None:
         await self.request.close()

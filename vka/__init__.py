@@ -5,4 +5,3 @@ from vka.base.buiders.keyboard import Keyboard
 from vka.base.buiders.button import Button
 from vka.chatbot.wrappers.user import User
 from vka.base.exception import VkApiError
-from vka.chatbot.registration import Registration
