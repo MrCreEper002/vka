@@ -80,7 +80,7 @@ class Message(Wrapper):
         """ Идентификатор отправителя """
         try:
             return self.fields.from_id
-        except KeyError:
+        except AttributeError:
             return self.fields.user_id
 
     @property
