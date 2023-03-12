@@ -2,7 +2,7 @@ import asyncio
 import json
 from typing import Optional, List, Union, Dict, AsyncIterable
 from loguru import logger
-from vka import API, random_, VkApiError
+from vka import API, random_
 from vka.base.wrapper import Event, Message
 from vka.chatbot.wrappers.user import User
 
@@ -162,18 +162,11 @@ class Context:
         """
         данная функция означает что будет изменено последнее сообщение бота
         """
-        try:
-            await self.edit(
-                message,
-                self.msg.conversation_message_id,
-                **kwargs
-            )
-        except VkApiError as error:
-            if f"[{error.error_code}] {error.error_msg}" \
-                    == "[909] Can't edit this message, because it's too old":
-                await self.answer(
-                    message, **kwargs
-                )
+        await self.edit(
+            message,
+            self.msg.conversation_message_id,
+            **kwargs
+        )
 
     async def fetch_sender(
             self,
