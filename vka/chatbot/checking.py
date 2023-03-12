@@ -3,6 +3,7 @@ import asyncio
 import json
 
 from loguru import logger
+
 from vka.base import AttrDict
 from vka.chatbot.context import Context
 

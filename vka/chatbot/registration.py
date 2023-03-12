@@ -37,6 +37,9 @@ class Registration:
             "%Y-%m-%dT%H:%M:%S+03:00"
         ) if s.find('ya:lastloggedin') is not None \
             else s.find('ya:lastloggedin')
+        location = s.find('ya:location').attrs.get('ya:city') \
+            if s.find('ya:lastloggedin') is not None \
+            else s.find('ya:location')
 
         return {
             "public_access": s.find('ya:publicaccess').text,
@@ -50,7 +53,7 @@ class Registration:
             "friends_count": s.find('ya:friendscount').text,
             "subscribed_to_count": s.find('ya:subscribedtocount').text,
             "birthday": s.find('foaf:birthday').text,
-            "location": s.find('ya:location').attrs.get('ya:city'),
+            "location": location,
             "created": datetime.strptime(
                 s.find('ya:created').attrs.get('dc:date'),
                 "%Y-%m-%dT%H:%M:%S+03:00"

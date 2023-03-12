@@ -2,7 +2,7 @@ import asyncio
 import json
 from typing import Optional, List, Union, Dict, AsyncIterable
 from loguru import logger
-from vka import API, random_
+from vka import API, random_, VkApiError
 from vka.base.wrapper import Event, Message
 from vka.chatbot.wrappers.user import User
 
@@ -13,7 +13,7 @@ class Context:
         self._bot = bot
         self._api = api
         self._event = event
-        self.command = None
+        self.command = ''
 
     @property
     def api(self) -> API:
@@ -162,7 +162,18 @@ class Context:
         """
         данная функция означает что будет изменено последнее сообщение бота
         """
-        await self.edit(message, self.msg.conversation_message_id, **kwargs)
+        try:
+            await self.edit(
+                message,
+                self.msg.conversation_message_id,
+                **kwargs
+            )
+        except VkApiError as error:
+            if f"[{error.error_code}] {error.error_msg}" \
+                    == "[909] Can't edit this message, because it's too old":
+                await self.answer(
+                    message, **kwargs
+                )
 
     async def fetch_sender(
             self,
@@ -296,27 +307,15 @@ class Context:
             return False
         return False
 
-    async def _messages_send(self, locals_: locals, params: Dict) -> int:
-        for name, value in locals_.items():
-            if name == "kwargs":
-                params.update(value)
-            elif name != "self" and value is not None:
-                params.update({name: value})
+    async def _messages_send(self, locals_: locals, params: Dict) -> dict:
+        params = check_params(locals_=locals_, params=params)
 
-        del params["params"]
         params['random_id'] = random_()
         messages_id = await self.api.method("messages.send", params)
         return messages_id
 
-    async def _messages_edit(self, locals_: locals, params: Dict):
-
-        for name, value in locals_.items():
-            if name == "kwargs":
-                params.update(value)
-            elif name != "self" and value is not None:
-                params.update({name: value})
-
-        del params["params"]
+    async def _messages_edit(self, locals_: locals, params: Dict) -> dict:
+        params = check_params(locals_=locals_, params=params)
 
         messages_id = await self.api.method("messages.edit", params)
         return messages_id
@@ -335,7 +334,6 @@ class Context:
         for event in new_event:
             logger.warning(event)
             event = Event(event)
-            logger.success(event)
             ctx = Context(event=event, api=self.api, bot=self)
 
             match event.type:
@@ -345,3 +343,14 @@ class Context:
                     else:
                         if self.msg.from_id in ctx.msg.from_id:
                             yield ctx
+
+
+def check_params(locals_: locals, params: dict) -> dict:
+    for name, value in locals_.items():
+        if name == "kwargs":
+            params.update(value)
+        elif name != "self" and value is not None:
+            params.update({name: value})
+
+    del params["params"]
+    return params
