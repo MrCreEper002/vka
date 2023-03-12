@@ -38,7 +38,7 @@ class Registration:
         ) if s.find('ya:lastloggedin') is not None \
             else s.find('ya:lastloggedin')
         location = s.find('ya:location').attrs.get('ya:city') \
-            if s.find('ya:lastloggedin') is not None \
+            if s.find('ya:location') is not None \
             else s.find('ya:location')
 
         return {
