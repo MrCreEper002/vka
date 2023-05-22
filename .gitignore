@@ -15,8 +15,4 @@ vka.egg-info/
 
 .DS_Store
 .idea
-vka/__pycache__/
-vka/base/__pycache__/
-vka/base/buiders/__pycache__/
-vka/chatbot/wrappers/__pycache__/
-__pycache__/
+**/__pycache__
