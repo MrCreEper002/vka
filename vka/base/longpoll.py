@@ -97,3 +97,4 @@ class LongPoll(KeyAndBoxStorage):
         self.__addition__.clear()
         self.__menu_commands__.clear()
         self.__callback_action__.clear()
+        self.get_item(key='run_custom_func').cancel()

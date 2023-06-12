@@ -57,7 +57,8 @@ class ABot(LongPoll):
         self.custom_event_name = custom_event_name
         self.custom_event_func = custom_event_func
         if custom_func is not None:
-            asyncio.create_task(custom_func(self))
+            run_custom_func = asyncio.create_task(custom_func(self))
+            self.set_item(key='run_custom_func', value=run_custom_func)
         await self._launching_bot(debug)
 
     async def _launching_bot(
