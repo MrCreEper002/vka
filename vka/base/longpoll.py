@@ -91,7 +91,8 @@ class LongPoll(KeyAndBoxStorage):
     async def _lp_close(self):
         await self.api.request.close()
         await self.request.close()
-        self.get_item(key='run_custom_func').cancel()
+        if self.__state__.get('run_custom_func') is not None:
+            self.get_item(key='run_custom_func').cancel()
         self.__state__.clear()
         self.__message_ids__.clear()
         self.__commands__.clear()
