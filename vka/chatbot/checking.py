@@ -221,7 +221,7 @@ class CheckingEventForCommand:
                 return asyncio.create_task(func(ctx))
         elif len(parameters) == 1 and argument is None:
             return asyncio.create_task(func(ctx))
-        elif len(parameters) == 2 and argument is not None:
+        elif len(parameters) == 2:
             return asyncio.create_task(func(ctx, argument))
         else:
             return
