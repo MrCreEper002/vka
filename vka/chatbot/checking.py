@@ -214,9 +214,14 @@ class CheckingEventForCommand:
 
         if len(parameters) == 0 and argument is None:
             return asyncio.create_task(func())
+        elif len(parameters) == 1 and argument is not None:
+            try:
+                return asyncio.create_task(func(ctx, argument))
+            except TypeError:
+                return asyncio.create_task(func(ctx))
         elif len(parameters) == 1 and argument is None:
             return asyncio.create_task(func(ctx))
-        elif len(parameters) == 2:
+        elif len(parameters) == 2 and argument is not None:
             return asyncio.create_task(func(ctx, argument))
         else:
             return
@@ -236,5 +241,5 @@ class CheckingEventForCommand:
                 func=command['func_obj'],
                 ctx=self._ctx,
                 command=cmd,
-                argument=self._ctx.msg.text.replace(cmd, '').strip()
+                argument=self._ctx.msg.text.lower().replace(cmd, '').strip()
             )
