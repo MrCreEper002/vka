@@ -1,19 +1,4 @@
-# vka [![PyPI](https://img.shields.io/pypi/v/vka.svg)](https://pypi.org/project/vka/) ![Python 3.x](https://img.shields.io/pypi/pyversions/vka.svg)
-
-#### Модуль сделана по основам [vk_api](https://github.com/python273/vk_api) и [vkquick](https://github.com/deknowny/vkquick)
-
-
-[![Typing SVG](https://readme-typing-svg.herokuapp.com?color=%2336BCF7&lines=pip+install+vka)](https://git.io/typing-svg)
-
-
-### Полезная информация: 
-* [Примеры](./examples)
-* [Документация по методам API](https://vk.com/dev/methods)
-* [Я в Telegram](https://t.me/bio_major4ik)
-
-
-
-```python
+# -*- coding: utf-8 -*-
 
 from vka import API
 import asyncio
@@ -34,5 +19,3 @@ async def main():
 
 
 asyncio.run(main())
-
-```
