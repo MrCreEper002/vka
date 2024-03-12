@@ -12,7 +12,7 @@ from vka import ABot, Context
 bot = ABot(token="group_token")
 
 # добавление команды в бота
-@bot.command(commands=['привет', 'hi'])
+@bot.add_command(commands=('привет', 'hi'))
 async def hello_world(ctx: Context):
     # чтобы воспользоваться методом вк
     await ctx.api.users.get(user_ids=1)  
@@ -39,7 +39,7 @@ async def hello_world(ctx: Context):
     """ 
 
     # отправка сообщения
-    await ctx.answer(f'{user:@full}, привет!')
+    await ctx.answer(f'{user:@full_name}, привет!')
     
 async def poke(ctx: Context):
     await ctx.answer('ТЫК!')
@@ -59,12 +59,12 @@ from vka import ABot, Context, Keyboard, Button
 bot = ABot(token="group_token")
 
 
-@bot.click_callback(show_snackbar=True)
+@bot.add_click_callback(show_snackbar=True)
 async def show_snackbar():
     return 'Произошло чудо 🧩'
 
 
-@bot.command(commands='привет')
+@bot.add_command(commands='привет')
 async def hello_world(ctx: Context):
     keyboard = Keyboard(
         Button.callback('Мя').positive().on_called(
@@ -76,3 +76,39 @@ async def hello_world(ctx: Context):
 
 bot.run()
 ```
+
+Третий пример
+
+```python
+ 
+from vka import ABot, Context, Keyboard, Button
+import asyncio
+
+
+async def show_snackbar():
+    return 'Произошло чудо 🧩'
+
+
+async def hello_world(ctx: Context):
+    keyboard = Keyboard(
+        Button.callback('Мя').positive().on_called(
+            show_snackbar
+        ),
+    )
+    await ctx.answer('Нажми на кнопку чтобы произошло чудо 🤖', keyboard=keyboard)
+
+async def any_text(ctx: Context):
+    await ctx.answer('Привет!')
+
+    
+async def main():
+    bot = ABot(token="group_token")
+    bot.register_command(hello_world, commands='hi') # только по команде сработает
+    bot.register_command(hello_world, any_text=True) # ответит на любое смс
+    bot.register_callback(hello_world, show_snackbar=True) # если хотите чтобы вылезло типо уведомления
+    await bot.async_run()
+
+asyncio.run(main())
+
+```
+
