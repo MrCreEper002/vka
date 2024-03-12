@@ -1,5 +1,12 @@
 # vka [![PyPI](https://img.shields.io/pypi/v/vka.svg)](https://pypi.org/project/vka/) ![Python 3.x](https://img.shields.io/pypi/pyversions/vka.svg)
 
+![Static Badge](https://img.shields.io/badge/MrCreEper002-vka-vka)
+![GitHub top language](https://img.shields.io/github/languages/top/MrCreEper002/vka)
+![GitHub](https://img.shields.io/github/license/MrCreEper002/vka)
+![GitHub Repo stars](https://img.shields.io/github/stars/MrCreEper002/vka)
+![GitHub issues](https://img.shields.io/github/issues/MrCreEper002/vka)
+[![Downloads](https://pepy.tech/badge/vka)](https://pepy.tech/project/vka)
+
 #### Модуль сделана по основам [vk_api](https://github.com/python273/vk_api) и [vkquick](https://github.com/deknowny/vkquick)
 
 
@@ -17,7 +24,6 @@
 
 from vka import API
 import asyncio
-from loguru import logger
 
 
 async def main():
