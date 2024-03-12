@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from vka import API
 import asyncio
 from loguru import logger
