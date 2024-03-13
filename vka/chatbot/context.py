@@ -9,7 +9,7 @@ from vka.chatbot.wrappers.user import User
 
 class Context:
 
-    def __init__(self, event, api: API, bot):
+    def __init__(self, event, api: API, bot: "ABot"):  # noqa: F821
         self._bot = bot
         self._api = api
         self._event = event
@@ -28,7 +28,7 @@ class Context:
         return Message(self.event.obj)
 
     @property
-    def bot(self) -> "ABot":
+    def bot(self) -> "ABot":  # noqa: F821
         return self._bot
 
     @property
@@ -46,15 +46,15 @@ class Context:
         any_user: реагирует на любого человека
 
         Пример:
-            >>> async for new_ctx in ctx.receive_new_message():
-            >>>    await new_ctx.reply('привет')
+            >>> async def main(ctx: Context):
+            >>>     async for new_ctx in ctx.receive_new_message():
+            >>>         await new_ctx.reply('привет')
         """
         async for new_event in self.receiving():
             if new_event.updates:
                 for event in new_event.updates:
                     event = Event(event)
-                    logger.success(event)
-                    ctx = Context(event=event, api=self.api, bot=self)
+                    ctx = Context(event=event, api=self.api, bot=self._bot)
                     if event.type in ['message_new', 'message_event']:
                         if any_user and ctx.msg.peer_id == self.msg.peer_id:
                             yield ctx
@@ -175,10 +175,12 @@ class Context:
             **kwargs
     ) -> list[User] | None | User:
         """
-        Обертка чтобы чтобы получить информацию об сообщении о его отправители
+        Обертка чтобы чтобы получить информацию
+         об сообщении о его отправители
         По умолчанию получает айди отправителя
 
-        fields: подробное описание написано тут https://dev.vk.com/reference/objects/user
+        fields: подробное описание написано
+        тут https://dev.vk.com/reference/objects/user
 
         name_case:
             • именительный – nom,
@@ -194,8 +196,9 @@ class Context:
             • all=True: все эти параметры сразу;
 
         Пример:
-            >>> user = await ctx.fetch_sender()
-            >>> await ctx.answer(f'Привет {user:fn}')
+            >>> async def main(ctx: Context):
+            >>>     user_get = await ctx.fetch_sender()
+            >>>     await ctx.answer(f'Привет {user_get:fn}')
 
             • id              - id
             • fn              - имя
@@ -206,24 +209,26 @@ class Context:
         if kwargs.get('reply'):
             try:
                 user_ids = self.msg.reply_message.from_id
-            except:
+            except:  # noqa: E722
                 return []
         elif kwargs.get('fwd'):
             try:
                 user_ids = [fwd.from_id for fwd in self.msg.fwd_messages]
-            except:
+            except:  # noqa: E722
                 return []
         elif kwargs.get('all'):
             user_ids = []
             try:
                 user_ids.append(self.msg.reply_message.from_id)
-            except: ...
+            except:  # noqa: E722
+                ...
             try:
                 [
                     user_ids.append(user.from_id)
                     for user in self.msg.fwd_messages if user.from_id > 0
                 ]
-            except: ...
+            except:  # noqa: E722
+                ...
             user_ids.append(self.msg.from_id)
         else:
             user_ids = self.msg.from_id
@@ -248,7 +253,7 @@ class Context:
             name_case: str = None
     ) -> list[User] | None | User:
         """
-        Обертка чтобы чтобы получить информацию об юзер айди, которые были переданы
+        Обертка чтобы получить информацию о юзер айди, которые были переданы
         Про fields, name_case можно прочесть в методе fetch_sender
         """
         users_info = await self.api.method(
@@ -280,12 +285,13 @@ class Context:
 
         Пример:
             async for new_ctx in ctx.receive_new_message():
-                if new_ctx.button_checking(obj, ...):
+                if new_ctx.button_checking(obj, any_user=1):
                     await new_ctx.answer('Ты нажал на кнопку')
         """
         if self.msg.payload is not None:
             command = eval(str(self.msg.payload))
             if func_name.__name__ == command['command']:
+
                 if isinstance(any_user, int):
                     if self.msg.from_id == any_user:
                         return True

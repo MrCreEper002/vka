@@ -1,5 +1,6 @@
 """
-The module is taken from the library -> https://github.com/kernsuite-debian/attrdict
+The module is taken
+from the library -> https://github.com/kernsuite-debian/attrdict
 """
 
 from abc import ABCMeta, abstractmethod

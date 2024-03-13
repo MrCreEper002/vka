@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa
 from typing import Callable
 
 from vka.base.exception import VkaError

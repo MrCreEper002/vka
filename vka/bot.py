@@ -53,30 +53,31 @@ class ABot(LongPoll):
             custom_event_func=None,
             custom_func=None,
     ):
+        self.debug = debug
         await self.async_init()
         self.custom_event_name = custom_event_name
         self.custom_event_func = custom_event_func
         if custom_func is not None:
             run_custom_func = asyncio.create_task(custom_func(self))
             self.set_item(key='run_custom_func', value=run_custom_func)
-        await self._launching_bot(debug)
+        await self._launching_bot()
 
     async def _launching_bot(
-            self, debug: bool,
+            self,
     ):
         async for event in self.listen():
             if event.updates:
                 asyncio.create_task(
                     self._wiretapping_type(
-                        updates=event.updates, debug=debug
+                        updates=event.updates
                     )
                 )
 
     async def _wiretapping_type(
-            self, updates, debug: bool,
+            self, updates
     ):
         for i in updates:
-            if debug:
+            if self.debug:
                 logger.opt(colors=True).debug(
                     f'[vka {self.group_id}] {i}'
                 )
@@ -84,7 +85,7 @@ class ABot(LongPoll):
 
     async def _defining_events(self, update):
         """
-        Определяем какой событие пришло от сервера
+        Определяем какое событие пришло от сервера
         """
         event = Event(update)
         ctx = Context(event=event, api=self.api, bot=self)
@@ -94,7 +95,8 @@ class ABot(LongPoll):
             callback_action=self.__callback_action__,
             commands=self.__commands__
         )
-        if self.custom_event_name is not None and update.type in self.custom_event_name:
+        if (self.custom_event_name is not None
+                and update.type in self.custom_event_name):
             if self.custom_event_func is not None:
                 return await self.custom_event_func(ctx)
         elif update.type == 'message_new':
@@ -207,11 +209,10 @@ class ABot(LongPoll):
             callback: bool = False,
             show_snackbar: bool | str = False,
     ):
-        """ можно использовать для добавлении кнопок без декораторов """
+        """ если проект разбит на файлы проще использовать """
         self.__callback_action__[func.__name__] = {
             'func_obj': func,
             'custom_filter': custom_filter,
             'callback': callback,
             'show_snackbar': show_snackbar
         }
-

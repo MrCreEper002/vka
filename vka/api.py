@@ -112,7 +112,7 @@ class API:
                     return await self.method(method_name, params)
                 logger.error(response)
                 raise error
-            case {'response': _r}:
+            case {'response': _r}:  # noqa: F841
                 return response.response
             case _:
                 return response

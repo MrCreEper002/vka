@@ -22,4 +22,5 @@ class VkApiError(Exception):
 #     def __init__(self, ):
 
 
-class VkaError(Exception): ...
+class VkaError(Exception):
+    ...

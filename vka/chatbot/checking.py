@@ -36,7 +36,8 @@ class CheckingEventForCommand:
                 return
             for i in self.menu_commands:
                 for j in i['menu']:
-                    if j['category'] == argument or j['subcategory'] == argument:
+                    if (j['category'] == argument
+                            or j['subcategory'] == argument):
                         await self.init_func(
                             i['func_obj'], self._ctx,
                             command=command, argument=i['button']

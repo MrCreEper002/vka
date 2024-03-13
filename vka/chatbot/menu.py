@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa
+from typing import Optional
+
 from vka import Keyboard, Button
 
 # TODO Переписать чтобы работало
@@ -13,7 +16,9 @@ class CreatorMenu:
         self.command = command
         self.func_obj = func_obj
         self.__menu_commands__ = menu_commands
-        self.__menu_commands__.append({'command': command, 'func_obj': func_obj, 'button': []})
+        self.__menu_commands__.append(
+            {'command': command, 'func_obj': func_obj, 'button': []}
+        )
         self.index = [
             self.__menu_commands__.index(i) for i in self.__menu_commands__
             if i['command'] == self.command
@@ -22,7 +27,8 @@ class CreatorMenu:
 
     def add_menu(
             self, command: str, icon: str,
-            category: str = None, subcategory: str = None,
+            category: Optional[str] = None,
+            subcategory: Optional[str] = None,
     ):
         self.__menu_commands__[self.index]['menu'].append(
             {
@@ -75,7 +81,9 @@ class CreatorMenu:
                             back_button, args=i['category']
                         ),
                     )
-                i['button'] = keyboard if keyboard.scheme["buttons"] != [[]] else []
+                i['button'] = keyboard if (
+                        keyboard.scheme["buttons"] != [[]]) \
+                    else []
 
 
 # m = CreatorMenu([], 'магазин', func_obj=any_button)
@@ -94,4 +102,3 @@ class CreatorMenu:
 # )
 #
 # m.keyboard_generation()
-

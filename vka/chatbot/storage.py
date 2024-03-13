@@ -1,7 +1,8 @@
 
 class KeyAndBoxStorage:
     """
-    KeyAndBoxStorage - это хранилище ключей и хранилище добавленных команд в бота для
+    KeyAndBoxStorage - это хранилище ключей и
+     хранилище добавленных команд в боте для
     быстрого сохранения и использования их процессе работы
     """
 
@@ -21,6 +22,3 @@ class KeyAndBoxStorage:
 
     def del_item(self, item):
         del self.__state__[item]
-
-
-

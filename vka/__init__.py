@@ -1,3 +1,4 @@
+# flake8: noqa
 from vka.api import API, LANG, random_
 from vka.chatbot.context import Context
 from vka.bot import ABot

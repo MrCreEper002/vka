@@ -20,6 +20,9 @@ class LongPoll(KeyAndBoxStorage):
             version: str = version_api(),
     ):
         KeyAndBoxStorage.__init__(self)
+        self.debug = False
+        self.custom_event_name = None
+        self.custom_event_func = None
         self.token = token
         self.lang = lang
         self.version = version
@@ -38,7 +41,9 @@ class LongPoll(KeyAndBoxStorage):
         await self._update_long_poll_server()
 
     async def _update_long_poll_server(self, ts: bool = True):
-        long_poll = await self.api.groups.getLongPollServer(group_id=self.group_id)
+        long_poll = await self.api.groups.getLongPollServer(
+            group_id=self.group_id
+        )
         self._key = long_poll.key
         if ts:
             self._ts = long_poll.ts
@@ -69,7 +74,9 @@ class LongPoll(KeyAndBoxStorage):
 
     async def listen(self):
         try:
-            logger.success(f"[vka] Запуск бота в группе -> @club{self.group_id}")
+            logger.success(
+                f"[vka] Запуск бота в группе -> @club{self.group_id}"
+            )
             while True:
                 try:
                     yield await self._check()
@@ -78,7 +85,10 @@ class LongPoll(KeyAndBoxStorage):
                 except Exception as vka_error:
                     logger.error(format_exc())
                     if str(vka_error) in 'Session is closed':
-                        logger.success(f"[vka] Аварийная остановка бота -> @club{self.group_id}")
+                        logger.error(
+                            f"[vka] Аварийная остановка бота "
+                            f"-> @club{self.group_id}"
+                        )
                         await self._lp_close()
                         return
                     await asyncio.sleep(1)
@@ -99,4 +109,3 @@ class LongPoll(KeyAndBoxStorage):
         self.__addition__.clear()
         self.__menu_commands__.clear()
         self.__callback_action__.clear()
-
