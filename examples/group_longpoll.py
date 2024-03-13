@@ -3,11 +3,17 @@ from vka import ABot, Context, Keyboard, Button
 
 
 bot = ABot(token='group_token')
+# используется для хранения и быстрого доступа в командах
+# так же можно записать объекты функций
+bot.set_item(key='admin', value=1)
 
 
 @bot.add_command(commands='привет')
 async def greet(ctx: Context):
-    await ctx.answer('ПРИВЕТ')
+    # для вызова записанной переменной
+    admin = ctx.bot.get_item(key='admin')
+    user = await ctx.user_get(user_ids=admin)
+    await ctx.answer(f'ПРИВЕТ, мой админ {user:@full_name}')
 
 
 @bot.add_command(commands='кто ты')
