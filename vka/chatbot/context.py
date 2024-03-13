@@ -237,8 +237,6 @@ class Context:
         )
         if users_info == ():
             return []
-        elif isinstance(user_ids, int):
-            return User(users_info[0])
         elif len(users_info) == 1:
             return User(users_info[0])
         return [User(user) for user in users_info]
@@ -248,7 +246,7 @@ class Context:
             user_ids: list | int | str,
             fields: List[str] = None,
             name_case: str = None
-    ):
+    ) -> list[User] | None | User:
         """
         Обертка чтобы чтобы получить информацию об юзер айди, которые были переданы
         Про fields, name_case можно прочесть в методе fetch_sender
@@ -260,11 +258,10 @@ class Context:
                 'name_case': name_case
             }
         )
-        if isinstance(user_ids, int) or isinstance(user_ids, str):
-            try:
-                return User(users_info[0])
-            except IndexError:
-                ...
+        if users_info == ():
+            return []
+        elif len(users_info) == 1:
+            return User(users_info[0])
         return [User(user) for user in users_info]
 
     def button_checking(
