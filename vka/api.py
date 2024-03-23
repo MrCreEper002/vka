@@ -65,7 +65,7 @@ class API:
             token: str,
             version: Union[float, str] = version_api(),
             url: str = "https://api.vk.com/method/",
-            lang: [LANG, int] = LANG.RU.value,
+            lang: Union[LANG, int] = LANG.RU.value,
             proxy: str = None,
     ) -> None:
         self._url = url

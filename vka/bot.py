@@ -78,8 +78,9 @@ class ABot(LongPoll):
     ):
         for i in updates:
             if self.debug:
-                logger.opt(colors=True).debug(
-                    f'[vka {self.group_id}] {i}'
+                logger.opt(record=False, colors=True).log(
+                    self.name_bot,
+                    f'<b><blue>[Debug] {i}</blue></b>'
                 )
             await self._defining_events(update=i)
 
@@ -95,18 +96,25 @@ class ABot(LongPoll):
             callback_action=self.__callback_action__,
             commands=self.__commands__
         )
+        peer_id = ''
+        if ctx.msg.get('peer_id') is not None and ctx.msg.peer_id != ctx.msg.from_id:
+            peer_id = f'<fg #999999>peer_id: {ctx.msg.peer_id}</fg #999999> '
         if (self.custom_event_name is not None
                 and update.type in self.custom_event_name):
             if self.custom_event_func is not None:
                 return await self.custom_event_func(ctx)
         elif update.type == 'message_new':
-            logger.opt(colors=True).info(
-                f'[vka {self.group_id}] '
-                f'<red>type: New message</red> '
-                f'<white>peer_id: {ctx.msg.peer_id}</white> '
-                f'<blue>from_id: '
-                f'{ctx.msg.from_id}</blue> '
-                f'<green>message: {ctx.msg.text}</green>'
+
+            text = f"{ctx.msg.text[0:15]}..." \
+                if len(ctx.msg.text) > 15 \
+                else ctx.msg.text
+
+            logger.opt(record=True, colors=True).log(
+                self.name_bot,
+                f'<b><y>[New message]</y></b> '
+                f'{peer_id}'
+                f'<fg #999999>from_id: {ctx.msg.from_id}</fg #999999> '
+                f'<fg #ffffff>message: {text}</fg #ffffff> '
             )
             if 'payload' in event.message:
                 asyncio.create_task(
@@ -118,12 +126,11 @@ class ABot(LongPoll):
             await check.search_for_command_message()
 
         elif update.type == 'message_event':
-            logger.opt(colors=True).info(
-                f'[vka {self.group_id}] '
-                f'<red>type: Message event</red> '
-                f'<white>peer_id: {ctx.msg.peer_id}</white> '
-                f'<blue>from_id: '
-                f'{ctx.msg.from_id}</blue> '
+            logger.opt(record=True, colors=True).log(
+                self.name_bot,
+                f'<b><y>[Message event]</y></b> '
+                f'{peer_id}'
+                f'<fg #999999>from_id: {ctx.msg.from_id}</fg #999999> '
             )
             asyncio.create_task(
                 check.shipment_data_message_event(

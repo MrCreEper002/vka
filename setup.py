@@ -4,7 +4,7 @@ with open(r'README.md', 'r', encoding='utf-8') as fh:
 
 setuptools.setup(
 	name='vka',
-	version='1.2.23',
+	version='1.2.24',
 	author='Major4ik',
 	author_email='2772771882@mail.ru',
 	description='module for the vk api wrapper',

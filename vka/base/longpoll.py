@@ -29,15 +29,17 @@ class LongPoll(KeyAndBoxStorage):
         self._wait = wait
         self.api: Optional[API] = None
         self.group_id = None
+        self.name_bot = ''
         self.request: Optional[aiohttp.ClientSession] = None
 
     async def async_init(self):
         self.request = aiohttp.ClientSession()
         self.api = API(token=self.token)
         await self.api.async_init()
-        self.group_id = (
-            await self.api.method('groups.getById', {})
-        )[0].id
+        get_by_id = await self.api.method('groups.getById', {})
+        self.group_id = get_by_id[0].id
+        self.name_bot = f"{get_by_id[0].name} - club{self.group_id}"
+        logger.level(self.name_bot, no=10, color="<lw>")
         await self._update_long_poll_server()
 
     async def _update_long_poll_server(self, ts: bool = True):
@@ -74,8 +76,9 @@ class LongPoll(KeyAndBoxStorage):
 
     async def listen(self):
         try:
-            logger.success(
-                f"[vka] Запуск бота в группе -> @club{self.group_id}"
+            logger.opt(record=True, colors=True).log(
+                self.name_bot,
+                f'<b><g>Запуск бота</g></b>'
             )
             while True:
                 try:
@@ -83,18 +86,23 @@ class LongPoll(KeyAndBoxStorage):
                 except asyncio.TimeoutError:
                     continue
                 except Exception as vka_error:
-                    logger.error(format_exc())
+                    logger.exception(vka_error)
                     if str(vka_error) in 'Session is closed':
-                        logger.error(
-                            f"[vka] Аварийная остановка бота "
-                            f"-> @club{self.group_id}"
+                        logger.opt(record=True, colors=True).log(
+                            self.name_bot,
+                            f'<b><r>Аварийная остановка бота</r></b>'
                         )
                         await self._lp_close()
                         return
                     await asyncio.sleep(1)
                     continue
+        except Exception as err:
+            logger.exception(err)
         finally:
-            logger.success(f"[vka] Остановка бота -> @club{self.group_id}")
+            logger.opt(record=True, colors=True).log(
+                self.name_bot,
+                f'<b><y>Остановка бота</y></b>'
+            )
             await self._lp_close()
             return
 
