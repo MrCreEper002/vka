@@ -39,7 +39,10 @@ class LongPoll(KeyAndBoxStorage):
         get_by_id = await self.api.method('groups.getById', {})
         self.group_id = get_by_id[0].id
         self.name_bot = f"{get_by_id[0].name} - club{self.group_id}"
-        logger.level(self.name_bot, no=10, color="<lw>")
+        try:
+            logger.level(self.name_bot, no=10, color="<lw>")
+        except:
+            ...
         await self._update_long_poll_server()
 
     async def _update_long_poll_server(self, ts: bool = True):
