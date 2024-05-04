@@ -6,6 +6,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/MrCreEper002/vka)
 ![GitHub issues](https://img.shields.io/github/issues/MrCreEper002/vka)
 [![Downloads](https://pepy.tech/badge/vka)](https://pepy.tech/project/vka)
+[![Documentation Status](https://readthedocs.org/projects/vka/badge/?version=latest)](https://vka.readthedocs.io/ru/latest/?badge=latest)
 
 #### Модуль сделана по основам [vk_api](https://github.com/python273/vk_api) и [vkquick](https://github.com/deknowny/vkquick)
 
@@ -14,6 +15,7 @@
 
 
 ### Полезная информация: 
+* [Документация vka](https://vka.readthedocs.io/ru/latest/?badge=latest)
 * [Примеры](./examples)
 * [Документация по методам API](https://vk.com/dev/methods)
 * [Я в Telegram](https://t.me/bio_major4ik)
