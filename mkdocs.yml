@@ -57,20 +57,20 @@ theme:
         - header.autohide
 
 
-markdown_extensions:
-    - admonition
-    - pymdownx.emoji
-    - pymdownx.magiclink
-    - pymdownx.snippets:
-        check_paths: true
-    - pymdownx.superfences
-    - pymdownx.tabbed
-    - pymdownx.tasklist
-    - pymdownx.snippets
-    - pymdownx.inlinehilite
-    - pymdownx.details
-    - toc:
-        permalink: true
+#markdown_extensions:
+#    - admonition
+#    - pymdownx.emoji
+#    - pymdownx.magiclink
+#    - pymdownx.snippets:
+#        check_paths: true
+#    - pymdownx.superfences
+#    - pymdownx.tabbed
+#    - pymdownx.tasklist
+#    - pymdownx.snippets
+#    - pymdownx.inlinehilite
+#    - pymdownx.details
+#    - toc:
+#        permalink: true
 
 
 # Custom css files
