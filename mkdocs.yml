@@ -28,7 +28,7 @@ nav:
 # Theme preference
 theme:
     # Use `mkdocs-material`
-#    name: material
+    name: material
 
     # Setup lang
     language: ru
