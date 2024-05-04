@@ -24,7 +24,7 @@ nav:
         - Echo-bot: docs/echo.md
         - Создание команд: docs/command-arguments.md
         - Клавиатуры: docs/keyboard.md
-        - Ожидание сообщение: doc/receive_new_message.md
+        - Ожидание сообщение: docs/receive_new_message.md
 
 
 # Theme preference
