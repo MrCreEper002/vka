@@ -1,4 +1,4 @@
-#  Welcome to VK Quick!
+#  Welcome to vka!
 
 __vka — это современный асинхронный фреймворк для создания ботов ВКонтакте созданный по основам [vk_api](https://github.com/python273/vk_api) и [vkquick](https://github.com/deknowny/vkquick)__
 
