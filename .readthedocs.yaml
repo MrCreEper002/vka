@@ -14,5 +14,6 @@ mkdocs:
   configuration: mkdocs.yml
 
 # Install docs-0.2 building dependencies
-#python:
-#  version: 3.10
+python:
+  install:
+    - requirements: docs/requirements.txt
