@@ -26,26 +26,27 @@
 ## Создание обычной клавиатуры
 
 ```python
-    @bot.add_command(commands='команды')
-    async def commands(ctx: Context):
-        keyboard = Keyboard(
-            Button.text('Первая команда').positive(),
-            Button.text('Вторая команда').negative(),
-            Button.text('Третья команда').primary(),
-            Button.text('Четвертая команда').secondary(),
-            ...,  # чтобы перенести клавиатуру на новую строчку
-            Button.text('Пятая команда').secondary(),
-        )
-        # чтобы добавить в последнюю строчку еще кнопку
-        keyboard.add(
-            Button.open_link('Профиль', 'https://vk.com/id1'),
-        )
-        # чтобы добавить клавиатуру с новой строчки
-        keyboard.new_line()
-        keyboard.add(
-            Button.text('Седьмая кнопка',).secondary(),
-        )
-        await ctx.answer('команды', keyboard=keyboard)
+@bot.add_command(commands='команды')
+async def commands(ctx: Context):
+    keyboard = Keyboard(
+        Button.text('Первая команда').positive(),
+        Button.text('Вторая команда').negative(),
+        Button.text('Третья команда').primary(),
+        Button.text('Четвертая команда').secondary(),
+        ...,  # чтобы перенести клавиатуру на новую строчку
+        Button.text('Пятая команда').secondary(),
+    )
+    # чтобы добавить в последнюю строчку еще кнопку
+    keyboard.add(
+        Button.open_link('Профиль', 'https://vk.com/id1'),
+    )
+    # чтобы добавить клавиатуру с новой строчки
+    keyboard.new_line()
+    keyboard.add(
+        Button.text('Седьмая кнопка',).secondary(),
+    )
+    
+    await ctx.answer('команды', keyboard=keyboard)
 ```
 
 ## Создание inline клавиатуры 
@@ -53,15 +54,42 @@
 Все то же самое как обычное только добавляется параметр _inline=True_
 
 ```python
-    @bot.add_command(commands='меню')
-    async def commands(ctx: Context):
-        keyboard = Keyboard(
-            Button.text('Первая команда').positive(),
-            inline=True
-        )
+@bot.add_command(commands='меню')
+async def commands(ctx: Context):
+    keyboard = Keyboard(
+        Button.text('Отмена️').secondary(),
+        inline=True
+    )
 
-        await ctx.answer('команды', keyboard=keyboard)
+    await ctx.answer('команды', keyboard=keyboard)
 ```
 
+## Создание Callback кнопки
 
+Для создания callback все тоже самое как и для других только после цвета кнопки добавляется еще функция .on_called(obj, arguments)
+* _obj_: передается образ функции (без вызова функции то есть)
+* _arguments_: передается аргументы через равно (то есть: user=123, full_name='Alex')
+
+ниже пример
+
+
+```python
+@bot.add_command(commands='меню')
+async def commands(ctx: Context):
+    keyboard = Keyboard(
+        Button.callback('hi').secondary().on_called(
+            commands, user=1
+        ),
+        inline=True
+    )
+
+    await ctx.answer('команды', keyboard=keyboard)
+
+@bot.add_click_callback(callback=True)
+async def info(ctx: Context, argument: dict):
+    user = await ctx.user_get(user_ids=argument['user'])
+    await ctx.answer(f'{user:fn}, привет!') 
+    
+
+```
 
