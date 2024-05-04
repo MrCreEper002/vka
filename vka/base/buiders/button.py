@@ -133,8 +133,8 @@ class Button:
     def open_link(
         cls,
         label: str,
-        *,
         link: str,
+        *,
         payload: typing.Optional[typing.Union[str, dict]] = None,
     ) -> _UncoloredButton:
         """
@@ -175,7 +175,6 @@ class Button:
     def open_app(
         cls,
         label: str,
-        *,
         app_id: int,
         owner_id: int,
         hash_: str,

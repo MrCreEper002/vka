@@ -1,0 +1,86 @@
+# Title of the site
+site_name: vka
+
+# Description of the site
+site_description: Асинхронный фреймворк
+
+# URL for pages editing
+repo_url: https://github.com/MrCreEper002/vka
+
+# Repository name
+repo_name: vka
+
+# Branch chosen when routing to repository
+remote_branch: "master"
+
+
+# Site's content
+nav:
+    - Home: index.md
+    - Установка: installation.md
+    - Документация:
+        - Введение: docs/index.md
+        - Echo-bot: docs/echo.md
+        - Команды с аргументами: docs/command-arguments.md
+        - Клавиатуры: docs/keyboard.md
+
+
+# Theme preference
+theme:
+    # Use `mkdocs-material`
+    name: material
+
+    # Setup lang
+    language: ru
+
+    # Used font on site
+    font:
+        # For ordinary text
+        text: Ubuntu
+        # For code pasts
+        code: Monaco
+
+    # Material coloring
+    palette:
+        # Use custom css-style. Check `css/custom.css`
+        scheme: slate
+        # Color when place the cursor on links (some kind of orange)
+        accent: amber
+
+    # Logo nearby title
+    logo: assets/logo.png
+
+    favicon: assets/logo.png
+
+    # Don't show target symbol nearby headers
+    features:
+        - header.autohide
+
+
+markdown_extensions:
+    - admonition
+    - pymdownx.emoji
+    - pymdownx.magiclink
+    - pymdownx.snippets:
+        check_paths: true
+    - pymdownx.superfences
+    - pymdownx.tabbed
+    - pymdownx.tasklist
+    - pymdownx.snippets
+    - pymdownx.inlinehilite
+    - pymdownx.details
+    - toc:
+        permalink: true
+
+
+# Custom css files
+extra_css:
+    - css/termynal.css
+    - css/custom.css
+
+# Custom js files
+extra_javascript:
+    - js/termynal.js
+    - js/custom.js
+
+

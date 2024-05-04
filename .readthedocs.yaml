@@ -1,0 +1,19 @@
+# Details: https://docs.readthedocs.io/en/stable/config-file/v2.html
+
+# Docs builder
+version: 2
+
+# Set the version of Python and other tools you might need
+build:
+  os: ubuntu-22.04
+  tools:
+    python: 3.10
+
+# Build documentation with MkDocs
+mkdocs:
+  configuration: mkdocs.yml
+
+# Install docs-0.2 building dependencies
+#python:
+#  install:
+#    - requirements: docs/requirements.txt

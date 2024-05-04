@@ -19,7 +19,7 @@ async def greet(ctx: Context):
 @bot.add_command(commands='кто ты')
 async def me(ctx: Context):
     # получение информации о пользователе который только что написал
-    user = ctx.fetch_sender()
+    user = await ctx.fetch_sender()
     # быстрое форматирование в строку
     # f"{user:id}" - только айди
     # f"{user:fn}" - только имя
