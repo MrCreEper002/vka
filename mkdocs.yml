@@ -75,12 +75,12 @@ markdown_extensions:
 
 # Custom css files
 extra_css:
-    - css/termynal.css
-    - css/custom.css
+    - docs/css/termynal.css
+    - docs/css/custom.css
 
 # Custom js files
 extra_javascript:
-    - js/termynal.js
-    - js/custom.js
+    - docs/js/termynal.js
+    - docs/js/custom.js
 
 
