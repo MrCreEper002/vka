@@ -21,7 +21,7 @@ nav:
         - Введение: docs/index.md
         - API: docs/api.md
         - Создание бота:
-            - abot.md
+            - docs/abot.md
             - Echo-bot: docs/echo.md
             - Создание команд: docs/command-arguments.md
             - Клавиатуры: docs/keyboard.md
