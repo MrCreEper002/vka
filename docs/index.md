@@ -24,17 +24,10 @@
 
 #### Модуль сделана по основам [vk_api](https://github.com/python273/vk_api) и [vkquick](https://github.com/deknowny/vkquick)
 
-[//]: # (***)
-# Установка 
-```shell
-pip install vka
-```
-[//]: # ([![Typing SVG]&#40;https://readme-typing-svg.herokuapp.com?color=%2336BCF7&lines=pip+install+vka&#41;]&#40;https://git.io/typing-svg&#41;)
-
-# Полезная информация
-* __Информация о _API___
+## Полезная информация
+###__Информация о _API___
   * __[API](https://dev.vk.com/ru)__
-* __Информация о _vka___
+###__Информация о _vka___
   * __[Документация](https://vka.readthedocs.io/ru/latest/?badge=latest)__
   * __[Официальный канал в Telegram](https://t.me/vka_official)__
 ***
