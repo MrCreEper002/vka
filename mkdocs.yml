@@ -80,4 +80,5 @@ markdown_extensions:
 #    - js/termynal.js
 #    - js/custom.js
 
-
+extra_css:
+  - css/style.css
