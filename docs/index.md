@@ -1,4 +1,4 @@
-#  Welcome to vka!
+#  Добро пожаловать в документацию vka
 
 __vka — инструмент для создания ботов для ВКонтакте на Python, созданный по основам [vk_api](https://github.com/python273/vk_api) и [vkquick](https://github.com/deknowny/vkquick)__
 
