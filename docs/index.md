@@ -25,9 +25,9 @@
 #### Модуль сделана по основам [vk_api](https://github.com/python273/vk_api) и [vkquick](https://github.com/deknowny/vkquick)
 
 ## Полезная информация
-###__Информация о _API___
+### __Информация о _API___
   * __[API](https://dev.vk.com/ru)__
-###__Информация о _vka___
+### __Информация о _vka___
   * __[Документация](https://vka.readthedocs.io/ru/latest/?badge=latest)__
   * __[Официальный канал в Telegram](https://t.me/vka_official)__
 ***
