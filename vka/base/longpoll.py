@@ -18,6 +18,7 @@ class LongPoll(KeyAndBoxStorage):
             self, token: str,
             wait: int = 25, lang: int = 0,
             version: str = version_api(),
+            proxy: str = None
     ):
         KeyAndBoxStorage.__init__(self)
         self.debug = False
@@ -31,10 +32,11 @@ class LongPoll(KeyAndBoxStorage):
         self.group_id = None
         self.name_bot = ''
         self.request: Optional[aiohttp.ClientSession] = None
+        self.proxy = proxy
 
     async def async_init(self):
         self.request = aiohttp.ClientSession()
-        self.api = API(token=self.token)
+        self.api = API(token=self.token, proxy=self.proxy)
         await self.api.async_init()
         get_by_id = await self.api.method('groups.getById', {})
         self.group_id = get_by_id[0].id

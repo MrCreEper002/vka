@@ -20,8 +20,8 @@ nav:
         - index.md
         - Введение: docs/index.md
         - API: docs/api.md
+        - ABot: docs/abot.md
         - Создание бота:
-            - docs/abot.md
             - Echo-bot: docs/echo.md
             - Создание команд: docs/command-arguments.md
             - Клавиатуры: docs/keyboard.md

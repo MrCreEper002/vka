@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any
+from typing import Any, Callable
 from loguru import logger
 
 from vka.base.longpoll import LongPoll
@@ -156,7 +156,7 @@ class ABot(LongPoll):
         return wrapper
 
     def register_command(
-            self, func, *custom_filter,
+            self, func: Callable[[Context], Any], *custom_filter,
             commands=(), any_text: bool = False,
             lvl: Any = None, show_snackbar: str = None,
             custom_answer: str = None,
@@ -212,7 +212,7 @@ class ABot(LongPoll):
 
     def register_callback(
             self,
-            func, *custom_filter,
+            func: Callable[[Context], Any], *custom_filter,
             callback: bool = False,
             show_snackbar: bool | str = False,
     ):
