@@ -27,31 +27,60 @@ nav:
         - Ожидание сообщение: docs/receive_new_message.md
 
 
-# Theme preference
 theme:
-    # Use `mkdocs-material`
-    name: mkdocs
+  name: material
+  features:
+    - navigation.instant
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.top
+    - search.suggest
+    - content.code.copy
 
-    # Setup lang
-    language: ru
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      accent: blue
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
 
-    # Used font on site
-    font:
-        # For ordinary text
-        text: Ubuntu
-        # For code pasts
-        code: Monaco
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      accent: blue
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to light mode
 
-    # Material coloring
-    palette:
-        # Use custom css-style. Check `css/custom.css`
-        scheme: slate
-        # Color when place the cursor on links (some kind of orange)
-        accent: amber
-
-    # Don't show target symbol nearby headers
-    features:
-        - header.autohide
+  font:
+    text: Roboto Mono
+    code: Monaco
+## Theme preference
+#theme:
+#    # Use `mkdocs-material`
+#    name: mkdocs
+#
+#    # Setup lang
+#    language: ru
+#
+#    # Used font on site
+#    font:
+#        # For ordinary text
+#        text: Ubuntu
+#        # For code pasts
+#        code: Monaco
+#
+#    # Material coloring
+#    palette:
+#        # Use custom css-style. Check `css/custom.css`
+#        scheme: slate
+#        # Color when place the cursor on links (some kind of orange)
+#        accent: amber
+#
+#    # Don't show target symbol nearby headers
+#    features:
+#        - header.autohide
 
 
 markdown_extensions:
