@@ -1,26 +1,38 @@
-# vka [![PyPI](https://img.shields.io/pypi/v/vka.svg)](https://pypi.org/project/vka/) ![Python 3.x](https://img.shields.io/pypi/pyversions/vka.svg)
 
+<p align="center">
+  <a href="https://github.com/vkbottle/vkbottle">
+    <img width="150px" height="150px" alt="vka" src="https://raw.githubusercontent.com/vka/vka/master/docs/logo.jpg">
+  </a>
+</p>
+<h1 align="center">
+  vka 
+</h1>
+<p align="center">
+    <em><b>инструмент для создания ботов для ВКонтакте на Python</b></em>
+</p>
+
+***
+[![PyPI](https://img.shields.io/pypi/v/vka.svg)](https://pypi.org/project/vka/) ![Python 3.x](https://img.shields.io/pypi/pyversions/vka.svg)
+***
 ![Static Badge](https://img.shields.io/badge/MrCreEper002-vka-vka)
 ![GitHub top language](https://img.shields.io/github/languages/top/MrCreEper002/vka)
 ![GitHub](https://img.shields.io/github/license/MrCreEper002/vka)
 ![GitHub Repo stars](https://img.shields.io/github/stars/MrCreEper002/vka)
-![GitHub issues](https://img.shields.io/github/issues/MrCreEper002/vka)
-[![Downloads](https://pepy.tech/badge/vka)](https://pepy.tech/project/vka)
 [![Documentation Status](https://readthedocs.org/projects/vka/badge/?version=latest)](https://vka.readthedocs.io/ru/latest/?badge=latest)
 
 #### Модуль сделана по основам [vk_api](https://github.com/python273/vk_api) и [vkquick](https://github.com/deknowny/vkquick)
 
-
+***
 [![Typing SVG](https://readme-typing-svg.herokuapp.com?color=%2336BCF7&lines=pip+install+vka)](https://git.io/typing-svg)
 
-
+***
 ### Полезная информация: 
-* [Документация vka](https://vka.readthedocs.io/ru/latest/?badge=latest)
-* [Примеры](./examples)
-* [Документация по методам API](https://vk.com/dev/methods)
-* [Я в Telegram](https://t.me/bio_major4ik)
-
-
+* __Информация о _API___
+  * __[API](https://dev.vk.com/ru)__
+* __Информация о _vka___
+  * __[Документация](https://vka.readthedocs.io/ru/latest/?badge=latest)__
+  * __[Официальный канал в Telegram](https://t.me/vka_official)__
+***
 
 ```python
 

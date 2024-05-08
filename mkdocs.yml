@@ -70,14 +70,14 @@ markdown_extensions:
         permalink: true
 
 
-# Custom css files
-extra_css:
-    - css/termynal.css
-    - css/custom.css
-
-# Custom js files
-extra_javascript:
-    - js/termynal.js
-    - js/custom.js
+## Custom css files
+#extra_css:
+#    - css/termynal.css
+#    - css/custom.css
+#
+## Custom js files
+#extra_javascript:
+#    - js/termynal.js
+#    - js/custom.js
 
 
