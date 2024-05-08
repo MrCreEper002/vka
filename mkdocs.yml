@@ -56,32 +56,6 @@ theme:
   font:
     text: Roboto Mono
     code: Monaco
-## Theme preference
-#theme:
-#    # Use `mkdocs-material`
-#    name: mkdocs
-#
-#    # Setup lang
-#    language: ru
-#
-#    # Used font on site
-#    font:
-#        # For ordinary text
-#        text: Ubuntu
-#        # For code pasts
-#        code: Monaco
-#
-#    # Material coloring
-#    palette:
-#        # Use custom css-style. Check `css/custom.css`
-#        scheme: slate
-#        # Color when place the cursor on links (some kind of orange)
-#        accent: amber
-#
-#    # Don't show target symbol nearby headers
-#    features:
-#        - header.autohide
-
 
 markdown_extensions:
   - admonition:
@@ -113,31 +87,18 @@ markdown_extensions:
   - pymdownx.details:
   - pymdownx.tabbed:
   - pymdownx.saneheaders:
-#markdown_extensions:
-#    - admonition
-#    - pymdownx.emoji
-#    - pymdownx.magiclink
-#    - pymdownx.snippets:
-#        check_paths: true
-#    - pymdownx.superfences
-#    - pymdownx.tabbed
-#    - pymdownx.tasklist
-#    - pymdownx.snippets
-#    - pymdownx.inlinehilite
-#    - pymdownx.details
-#    - toc:
-#        permalink: true
 
 
-## Custom css files
-#extra_css:
-#    - css/termynal.css
-#    - css/custom.css
-#
-## Custom js files
-#extra_javascript:
-#    - js/termynal.js
-#    - js/custom.js
 
+# Custom css files
 extra_css:
-  - css/style.css
+    - css/termynal.css
+    - css/custom.css
+
+# Custom js files
+extra_javascript:
+    - js/termynal.js
+    - js/custom.js
+
+#extra_css:
+#  - css/style.css
