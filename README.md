@@ -1,7 +1,7 @@
 
 <p align="center">
   <a href="https://github.com/vkbottle/vkbottle">
-    <img width="150px" height="150px" alt="vka" src="https://raw.githubusercontent.com/vka/vka/master/docs/logo.jpg">
+    <img width="150px" height="150px" alt="vka" src="https://raw.githubusercontent.com/MrCreEper002/vka/master/docs/logo.jpg">
   </a>
 </p>
 <h1 align="center">
