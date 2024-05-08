@@ -55,19 +55,49 @@ theme:
 
 
 markdown_extensions:
-    - admonition
-    - pymdownx.emoji
-    - pymdownx.magiclink
-    - pymdownx.snippets:
-        check_paths: true
-    - pymdownx.superfences
-    - pymdownx.tabbed
-    - pymdownx.tasklist
-    - pymdownx.snippets
-    - pymdownx.inlinehilite
-    - pymdownx.details
-    - toc:
-        permalink: true
+  - admonition:
+  - md_in_html:
+  - toc:
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+      permalink: ""
+  - pymdownx.magiclink:
+      repo_url_shortener: true
+      repo_url_shorthand: true
+      normalize_issue_symbols: true
+      user: vkbottle
+      repo: vkbottle
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      linenums: true
+      guess_lang: true
+  - pymdownx.inlinehilite:
+  - pymdownx.superfences:
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.escapeall:
+      hardbreak: True
+      nbsp: True
+  - pymdownx.details:
+  - pymdownx.tabbed:
+  - pymdownx.saneheaders:
+#markdown_extensions:
+#    - admonition
+#    - pymdownx.emoji
+#    - pymdownx.magiclink
+#    - pymdownx.snippets:
+#        check_paths: true
+#    - pymdownx.superfences
+#    - pymdownx.tabbed
+#    - pymdownx.tasklist
+#    - pymdownx.snippets
+#    - pymdownx.inlinehilite
+#    - pymdownx.details
+#    - toc:
+#        permalink: true
 
 
 ## Custom css files
