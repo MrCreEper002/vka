@@ -445,8 +445,9 @@ class VkLongPoll(object):
         self.url = f'https://{self.server}'
 
         if update_ts:
+            logger.info(self.pts)
             self.ts = response['ts']
-            if self.pts:
+            if response.get('pts'):
                 self.pts = response['pts']
 
     async def check(self):

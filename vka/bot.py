@@ -104,18 +104,17 @@ class ABot(LongPoll):
             if self.custom_event_func is not None:
                 return await self.custom_event_func(ctx)
         elif update.type == 'message_new':
-
-            text = f"{ctx.msg.text[0:15]}..." \
-                if len(ctx.msg.text) > 15 \
-                else ctx.msg.text
-
-            logger.opt(record=True, colors=True).log(
-                self.name_bot,
-                f'<b><y>[New message]</y></b> '
-                f'{peer_id}'
-                f'<fg #999999>from_id: {ctx.msg.from_id}</fg #999999> '
-                f'<fg #ffffff>message: {text}</fg #ffffff> '
-            )
+            if self.debug:
+                text = f"{ctx.msg.text[0:15]}..." \
+                    if len(ctx.msg.text) > 15 \
+                    else ctx.msg.text
+                logger.opt(record=True, colors=True).log(
+                    self.name_bot,
+                    f'<b><y>[New message]</y></b> '
+                    f'{peer_id}'
+                    f'<fg #999999>from_id: {ctx.msg.from_id}</fg #999999> '
+                    f'<fg #ffffff>message: {text}</fg #ffffff> '
+                )
             if 'payload' in event.message:
                 asyncio.create_task(
                     check.shipment_data_message_event(
@@ -126,12 +125,13 @@ class ABot(LongPoll):
             await check.search_for_command_message()
 
         elif update.type == 'message_event':
-            logger.opt(record=True, colors=True).log(
-                self.name_bot,
-                f'<b><y>[Message event]</y></b> '
-                f'{peer_id}'
-                f'<fg #999999>from_id: {ctx.msg.from_id}</fg #999999> '
-            )
+            if self.debug:
+                logger.opt(record=True, colors=True).log(
+                    self.name_bot,
+                    f'<b><y>[Message event]</y></b> '
+                    f'{peer_id}'
+                    f'<fg #999999>from_id: {ctx.msg.from_id}</fg #999999> '
+                )
             asyncio.create_task(
                 check.shipment_data_message_event(
                     obj=event.obj,
